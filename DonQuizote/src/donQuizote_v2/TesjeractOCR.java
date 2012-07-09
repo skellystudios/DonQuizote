@@ -71,24 +71,33 @@ public class TesjeractOCR extends OCREngine {
 
 	private String EANYCodeChartoString(EANYCodeChar[] ecc){
 		String s = "";
-		System.out.print("Yah, here");
+		//System.out.println("Yah, here #TOCR" +  ecc.length);
 		for (int j=0; j < ecc.length; j++){
+			
+			
+				
+		
 			
 				if (ecc[j].blanks != 0)
 					s = s.concat(" ");
 			
-				//System.out.print((char) c.char_code);
 			
+				
+				//System.out.print((char) c.char_code);
+				if (ecc[j].char_code < 126){
 			s = s.concat(Character.toString(Character.toChars(ecc[j].char_code)[0]));
-			System.out.println(j + ": " + ecc[j].blanks + " " + ecc[j].char_code + " " + Character.toString(Character.toChars(ecc[j].char_code)[0]));
+				}
+			//System.out.println(j + ": " + ecc[j].blanks + " " + ecc[j].char_code + " " + Character.toString(Character.toChars(ecc[j].char_code)[0]));
+		
 		}
+		//System.out.println("Now here #TesjOCR");
 		return s;
 	}
 	
 	
 	
 	
-	public String recognizeBuffImage(BufferedImage buf) throws IOException {
+	public String recognise(BufferedImage buf) {
 		String s = "";
 		try {
 		
@@ -101,11 +110,19 @@ public class TesjeractOCR extends OCREngine {
 		
 		Tesjeract tess = new Tesjeract("eng");
 		EANYCodeChar[] words = tess.recognizeAllWords(bytebuff);
+		//System.out.println("Here #TOCR 1");
 		s = EANYCodeChartoString(words);
+		
+		file.delete();
+		file = null; 
+		
 		} catch (Exception e) {
 			System.out.println(e.toString());
 		}
 
+		
+		
+		
 return s;
 	}
 
@@ -114,8 +131,9 @@ return s;
 		assertFalse(Tesjeract.getLanguages().isEmpty());
 	}
 
-	public String recognise(BufferedImage buff) {
+	public String recognise() {
 		// TODO Auto-generated method stub
-		return null;
+		
+			return null;
 	}
 }

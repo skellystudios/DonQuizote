@@ -51,15 +51,19 @@ public class QuizController {
 		GetAreaWorker worker = new GetAreaWorker(NumberOfAreas){
 			
 			@Override
-			 protected void done(){
+			 protected void done2(){
 			        try {
 			          // Get the number of matches. Note that the 
 			          // method get will throw any exception thrown 
 			          // during the execution of the worker.
-			          Rectangle[] foundAreas = get();
-			         areas = foundAreas;
+			        	  //System.out.println("Hey1");
+			        	//Rectangle[] foundAreas = get();
+			       // System.out.println("Captured " + areaOutput.length + " areas out of " + NumberOfAreas + " #QuizController");
+			        	
+			         areas = areaOutput;
 			         
 			        }catch(Exception e){
+			        	e.printStackTrace();
 			          
 			        }
 			      }
@@ -75,7 +79,15 @@ public class QuizController {
 
 	public BufferedImage[] getQAImages() {
 		
-		return null;
+		BufferedImage[] qAImages = new BufferedImage[areas.length];
+		int i = 0;
+		for (Rectangle area : areas){
+			//System.out.println(area.height);
+			qAImages[i] = grabArea(area);
+			i++;
+		}
+			
+		return qAImages;
 	}
 	
 	private BufferedImage grabArea(Rectangle captureArea){
@@ -85,7 +97,10 @@ public class QuizController {
 			BufferedImage image = robot.createScreenCapture(captureArea);
 			BufferedImage flippedImage = invertImage(image);
 			return flippedImage;
-			} catch(Exception e) {return null;}
+			} catch(Exception e) {
+				//System.out.println("E");
+				e.printStackTrace();
+				return null;}
 	}
 
 	private BufferedImage invertImage(final BufferedImage src) {

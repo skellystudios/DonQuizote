@@ -36,9 +36,9 @@ class BingLookup implements Lookup
 	}
 	
 	
-	public void getAnswer(String question, String ansA, String ansB, String ansC, String ansD){
+	public String getAnswer(String question, String ansA, String ansB, String ansC, String ansD){
 
-
+		String result = "";
 			try {
 		
 				System.out.printf("Looking up question\n");
@@ -59,24 +59,30 @@ class BingLookup implements Lookup
 				Document[] answerDocsD = query(question, ansD);
 				hits[3] = ReturnHits(answerDocsD[0]) / ReturnHits(answerDocsD[1]); 
 				
+				// No NaNs
+				for (int i = 0; i < hits.length; i++){ if ((0 < hits[i]) == false) { hits[i] = 0;}}
+				
 				// Which one won?
 				double maxHits = 0.0; int maxID = 1;	String winner;
-			
+				String[] answerIDs = {"A", "B", "C", "D"}; 
+				
 				// Identify the winner
-				System.out.printf("Who's the winner: A: " + hits[0] + " B: "+ hits[1] + " C: "+ hits[2] + " \n");
+				System.out.printf("Who's the winner: A: " + hits[0] + " B: "+ hits[1] + " C: "+ hits[2] + " D: "+ hits[3] + " \n");
 					for (int i = 0; i < hits.length; i++){
+						
+				//		System.out.println("Checking");
 					if (maxHits <= hits[i]){
 						maxHits = hits[i]; 
 						maxID = i;
 					}
 				}
-				String[] answerIDs = {"A", "B", "C", "D"}; 
+				
 				winner = answerIDs[maxID];
 				
 				//System.out.printf("Calc Standev\n");
 				double stanDev = StandardDeviation.standardDeviationCalculate(hits);
 				//System.out.printf("Calc Standev: " + stanDev + "\n");
-				double mean = ((hits[0] + hits[1] + hits[2]) / 3);
+				double mean = ((hits[0] + hits[1] + hits[2] + hits[3]) / 4);
 				//System.out.printf("Calc mean: " + mean + "\n");
 				double distFromMean = maxHits - mean;
 				//System.out.printf("dist from mean: " + distFromMean + "\n");
@@ -89,14 +95,15 @@ class BingLookup implements Lookup
 				//System.out.printf("Flawed\n");
 				//double confidencePc = confidence * 100.0;
 				//System.out.printf("Now print\n");
-				System.out.printf("Winner is " + winner + " with "  + sDsFromMean + " sDsFromMean => " + finalconf + " confidence");
 				
+				result = "Winner is " + winner + " with "  + sDsFromMean + " sDsFromMean => " + finalconf + " confidence";
+				System.out.printf(result);
 				//DisplayResults(answerDocsC[1]);
 				
 				}
 			catch (Exception e){ System.out.printf("Something cocked up");}
 			
-		
+				return result;
 		
 		
 		}
@@ -109,9 +116,10 @@ class BingLookup implements Lookup
 	private Document[] query(String question, String answer){
 		try {
 			Document[] outputDocs = new Document[2];
-			String queryString = question+" %2B\""+answer+"\"";
+			System.out.println("Question " + question + " *Bing");
+			String queryString = " %2B ggg \" gg"+answer+"\" gg"+question;
 			String requestURL = BuildRequest(queryString);
-			System.out.printf("Searching for: "+ question+" +\""+answer+"\"" + " :");
+			System.out.printf("Searching for: +" + queryString + " :");
 			outputDocs[0] = GetResponse(requestURL);
 				if(outputDocs[0] != null)	{ System.out.printf(" " +ReturnHits(outputDocs[0])+ " hits\n");  } 
 				else {System.out.printf(" No hits"); }

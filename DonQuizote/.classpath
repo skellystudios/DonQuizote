@@ -17,5 +17,7 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="C:/Users/Michael/Coding/Libraries/junit.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Michael/git/DonQuizote/DonQuizote/google-api-spelling-java-1.1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Michael/Coding/Libraries/apache-log4j-1.2.17/log4j-1.2.17.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

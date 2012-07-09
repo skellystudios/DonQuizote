@@ -46,7 +46,7 @@ public class DQInterface implements Writable{
 		JButton ocrButton = new JButton("Process Areas");	
 		ocrButton.addActionListener(new ActionListener() {
 		      								public void actionPerformed(ActionEvent actionEvent) {
-		      									//ocrAreas();
+		      									dq.answerQuestion();
 		      									updateText("Hello");
 		      								} });
 		 //mappingButton.addMouseListener(mouseListener);

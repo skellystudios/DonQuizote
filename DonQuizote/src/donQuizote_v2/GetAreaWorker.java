@@ -21,12 +21,12 @@ import javax.swing.SwingWorker;
 public class GetAreaWorker extends SwingWorker<Rectangle[], String> {
 
 	int numberToGet;
-	Rectangle[] areaOutput;
+	public Rectangle[] areaOutput;
 	private Toolkit toolkit = Toolkit.getDefaultToolkit();
 
 	public GetAreaWorker(int i){
 		numberToGet = i;
-		areaOutput = new Rectangle[i-1];
+		areaOutput = new Rectangle[i];
 	}
 	
 	@Override
@@ -63,12 +63,17 @@ public class GetAreaWorker extends SwingWorker<Rectangle[], String> {
 	    } 
 	    Rectangle captureArea = new Rectangle(mouseTrap.point1.x,mouseTrap.point1.y,mouseTrap.point2.x-mouseTrap.point1.x, mouseTrap.point2.y-mouseTrap.point1.y);
 		mouseTrap.done = true;
-	  //  System.out.println("Gottit");
+	
+		
+
 	    frame.dispose();
-	    
+	   // System.out.println("Closed " + i);
+	    Rectangle test = captureArea;
+	   // System.out.println("Postclose");
 	    areaOutput[i] = captureArea;
+	     System.out.println("Gottit " + i + " #GetAreaWorker 1");
 	}
-	   
+	   done2();
 	   return areaOutput;
 	}
 	
@@ -92,6 +97,11 @@ public class GetAreaWorker extends SwingWorker<Rectangle[], String> {
 			   ex.printStackTrace();
 			}
 	}
+
+	protected void done2() {
+		// TODO Auto-generated method stub
+		
+	}
 	 
    
 }
@@ -113,11 +123,11 @@ class TwoClickListener implements MouseListener {
 		if (!done){	clicks++;
 			if (clicks == 1) {
 				point1 = e.getPoint();
-				System.out.printf("Point 1: " + e.getPoint().toString());
+				System.out.println("Point 1: " + e.getPoint().toString());
 				} 
 			
 			else { point2 = e.getPoint();
-				System.out.printf("Point 2: " + e.getPoint().toString());
+				System.out.println("Point 2: " + e.getPoint().toString());
 				done = true;
 			}
 		}
