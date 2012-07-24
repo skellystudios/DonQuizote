@@ -19,5 +19,7 @@
 	<classpathentry kind="lib" path="C:/Users/Michael/Coding/Libraries/junit.jar"/>
 	<classpathentry kind="lib" path="C:/Users/Michael/git/DonQuizote/DonQuizote/google-api-spelling-java-1.1.jar"/>
 	<classpathentry kind="lib" path="C:/Users/Michael/Coding/Libraries/apache-log4j-1.2.17/log4j-1.2.17.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Michael/Coding/Libraries/mysql-connector-java-5.1.21/mysql-connector-java-5.1.21-bin.jar"/>
+	<classpathentry kind="lib" path="forms-1.3.0.jar" sourcepath="forms-1.3.0-src.zip"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

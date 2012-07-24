@@ -23,6 +23,7 @@ class BingLookup implements Lookup
 	static XPathExpression expr = null;
 	private String question, ansA, ansB, ansC, bestguess;
 	private int confidence;
+	private int numberOfAnswers = 4;
 	
 //	// Config proxy
 //	private static String proxy = "gbprdisa1.europe1.com";
@@ -36,6 +37,94 @@ class BingLookup implements Lookup
 	}
 	
 	
+	public String getAnswer(String[] qAs){
+
+		String output = "";
+			try {
+		
+				System.out.printf("Looking up question\n");
+				numberOfAnswers = qAs.length - 1;
+				//Make a nice array for people
+				double[] hits = new double[numberOfAnswers]; for (int i = 0; i < hits.length; i++){ hits[i] = 0;}
+				double[] qAndAHits = new double[numberOfAnswers];
+				double[] aHits = new double[numberOfAnswers];
+				int totalHits = 0;
+		
+				
+				for (int i = 0; i < numberOfAnswers; i++){
+					// Build and send the request.
+					Document[] answerDoc = query(qAs[0], qAs[i+1]);
+					//Assign the variables
+					qAndAHits[i] = ReturnHits(answerDoc[0]);
+					aHits[i] = ReturnHits(answerDoc[1]);
+					totalHits += qAndAHits[i];
+				}
+				
+				// If we have any q&a hits, then use ratios. Otherwise do just answers
+				if (totalHits > 0)
+				{
+					for (int i = 0; i < numberOfAnswers; i++){
+						if (aHits[i] > 0)
+						hits[i] = qAndAHits[i] / aHits[i]; 
+						else
+						hits[i] = 0; 		
+					}
+				} else {
+					for (int i = 0; i < numberOfAnswers; i++){
+						hits[i] = aHits[i];
+					}
+				}
+				
+
+				// Which one won?
+				double maxHits = 0.0; int maxID = 1;	String winner;
+				String[] answerIDs = {"A", "B", "C", "D"}; 
+				
+				// Identify the winner
+				System.out.printf("Who's the winner: ");
+					for (int i = 0; i < numberOfAnswers; i++){
+						
+					System.out.printf(answerIDs[i] + " " + hits[i]);
+					if (maxHits <= hits[i]){
+						maxHits = hits[i]; 
+						maxID = i;
+					}
+				}
+				
+				winner = answerIDs[maxID];
+				
+				//System.out.printf("Calc Standev\n");
+				double stanDev = StandardDeviation.standardDeviationCalculate(hits);
+				//System.out.printf("Calc Standev: " + stanDev + "\n");
+				//double mean = ((hits[0] + hits[1] + hits[2] + hits[3]) / 4);
+				double sum = 0; for (double d : hits)  sum += d;	
+				double mean = sum / hits.length;
+				//System.out.printf("Calc mean: " + mean + "\n");
+				double distFromMean = maxHits - mean;
+				//System.out.printf("dist from mean: " + distFromMean + "\n");
+				double sDsFromMean = 0;
+				if (stanDev != 0) {  sDsFromMean = distFromMean / stanDev;}
+				//System.out.printf("sDs from mean: " + sDsFromMean + "\n");
+				double confidence = sDsFromMean * sDsFromMean;
+				//System.out.printf("Calc conf: " + confidence + "\n"); 
+				double finalconf = confidence / (1.333333);   // Why?
+				//System.out.printf("Flawed\n");
+				//double confidencePc = confidence * 100.0;
+				//System.out.printf("Now print\n");
+				
+				output = "Winner is " + winner + " with "  + sDsFromMean + " sDsFromMean => " + finalconf + " confidence";
+				System.out.printf(output);
+				//DisplayResults(answerDocsC[1]);
+				
+				}
+			catch (Exception e){ System.out.printf("Something cocked up");}
+			
+				return output;
+		
+		
+		}
+	
+	
 	public String getAnswer(String question, String ansA, String ansB, String ansC, String ansD){
 
 		String result = "";
@@ -44,10 +133,13 @@ class BingLookup implements Lookup
 				System.out.printf("Looking up question\n");
 		
 				//Make a nice array for people
-				double[] hits = new double[4];		for (int i = 0; i < hits.length; i++){ hits[i] = 0;}
+				double[] hits = new double[numberOfAnswers]; for (int i = 0; i < hits.length; i++){ hits[i] = 0;}
+				double[] qAndAHits = new double[numberOfAnswers];
+				double[] qHits = new double[numberOfAnswers];
 				
 				// Build and send the request.
 				Document[] answerDocsA = query(question, ansA);
+				
 				hits[0] = ReturnHits(answerDocsA[0]) / ReturnHits(answerDocsA[1]); 
 				
 				Document[] answerDocsB = query(question, ansB);
@@ -107,6 +199,8 @@ class BingLookup implements Lookup
 		
 		
 		}
+	
+	
 	public String guess() 	{ return "A";		} // Placeholder
 	public int	 confidence() { return 100; } // Placeholder
 	public String results() { return "BB";} // Placeholder
@@ -117,14 +211,15 @@ class BingLookup implements Lookup
 		try {
 			Document[] outputDocs = new Document[2];
 			System.out.println("Question " + question + " *Bing");
-			String queryString = " %2B ggg \" gg"+answer+"\" gg"+question;
+			System.out.println("Answer " + answer + " *Bing");
+			String queryString = question+" %2B\""+answer+"\"";
 			String requestURL = BuildRequest(queryString);
-			System.out.printf("Searching for: +" + queryString + " :");
+			System.out.printf("Searching for: +" + question + " \"" + answer + "\" :");
 			outputDocs[0] = GetResponse(requestURL);
 				if(outputDocs[0] != null)	{ System.out.printf(" " +ReturnHits(outputDocs[0])+ " hits\n");  } 
 				else {System.out.printf(" No hits"); }
 
-			queryString = "info \""+answer+"\"";
+			queryString = "\""+answer+"\"";
 			requestURL = BuildRequest(queryString);
 			System.out.printf("Searching for: "+ queryString + " :");
 			outputDocs[1] = GetResponse(requestURL);
@@ -291,9 +386,6 @@ results.getLength()) + " of " + total + " results ");
 			System.out.println();
 		}
 	}
-	@Override
-	public void getAnswer(String[] qAndAs) {
-		getAnswer(qAndAs[0],qAndAs[1],qAndAs[2],qAndAs[3],qAndAs[4]);
-		
-	}
+	
+
 }

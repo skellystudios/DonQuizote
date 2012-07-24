@@ -123,7 +123,8 @@ public class TesjeractOCR extends OCREngine {
 		
 		
 		
-return s;
+		System.out.println("Recognised: " + s + " #TesjeractOCR");
+		return s;
 	}
 
 	//@Test
