@@ -1,0 +1,28 @@
+DELIMITER $$
+
+DROP FUNCTION IF EXISTS `db2`.`diff3`$$
+
+CREATE DEFINER=`root`@`localhost` FUNCTION `diff3`(n1 varchar(50), n2 varchar(50)) RETURNS int(11)
+DETERMINISTIC
+BEGIN
+declare s1 char(1);
+declare s2 char(1);
+declare s3 int;
+declare s4 int;
+declare l1 int;
+declare diff int;
+set l1 = 1;
+set diff = 0;
+repeat
+set s1 = substring(soundex(n1),l1,1);
+set s2 = substring(soundex(n2),l1,1);
+if s1 = s2 then set diff = diff + 1;
+end if;
+set l1 = l1 + 1;
+
+until l1 > 4
+end repeat;
+return diff;
+END$$
+
+DELIMITER ;

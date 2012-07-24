@@ -1,12 +1,9 @@
 	package donQuizote_v2;
 
-import java.awt.Frame;
-import java.awt.Point;
+
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.Window;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -15,7 +12,6 @@ import javax.swing.JFrame;
 
 public class AreaFinder {
 	
-	private Rectangle area;
 	private Toolkit toolkit = Toolkit.getDefaultToolkit();
 	
 	public AreaFinder(){
