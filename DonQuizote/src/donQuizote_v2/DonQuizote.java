@@ -13,9 +13,8 @@ import org.xeustechnologies.googleapi.spelling.SpellCorrection;
 import org.xeustechnologies.googleapi.spelling.SpellResponse;
 
 public class DonQuizote {
-	
+
 	// Desiderata
-	private DQInterface dqinterface;
 	private QuizController controller;
 	private OCREngine ocr;
 	private AreaFinder afinder;
@@ -24,96 +23,93 @@ public class DonQuizote {
 	private Lookup lookup;
 	private DQWindow dqwindow;
 	public int qID;
-	
+
 	private int testingMode = 1;
-	private String[] testQs = {"Who which director directed the film Psycho?", "Alfred Hitchcock", "The Cohen Brothers", "Steven Spielburg", "Quentin Tarrentino"};
-	
+	private String[] testQs = { "Who which director directed the film Psycho?",
+			"Alfred Hitchcock", "The Cohen Brothers", "Steven Spielburg",
+			"Quentin Tarrentino" };
+
 	public static void main(String[] args) {
-		 new DonQuizote();
+		new DonQuizote();
 	}
-	
+
 	// Main thread
-	public DonQuizote(){
-						
+	public DonQuizote() {
+
 		// Load the OCR Engine
-		if (testingMode == 1){
-		ocr = new FakeOCR();   // Fake OCR machine so I can do this on a mac.
+		if (testingMode == 1) {
+			ocr = new FakeOCR(); // Fake OCR machine so I can do this on a mac.
 		} else {
 			ocr = new TesjeractOCR();
 		}
-	
+
 		// Prepare the interface
-		//dqinterface = new DQInterface(this);
-		 dqwindow = new DQWindow(this);
-			
-		// Load the controller 
-		controller = new QuizController(dqwindow); 	
-			
-		// Show the window
-		//dqinterface.makeWindow();
-			
-		//Connect to the Database
+		dqwindow = new DQWindow(this);
+
+		// Load the controller
+		controller = new QuizController(dqwindow);
+
+		// Connect to the Database
 		db = new DBDriver();
-			
-		//Add a lookup engine
+
+		// Add a lookup engine
 		lookup = new BingLookup();
 	}
-	
-	
-	
+
 	// Define the recognition areas
-	public void setAreas(){
+	public void setAreas() {
 		controller.setAreas();
-		
-		}
-	
-	public void answerQuestion(){
-		
-		//Clear the previous question's data
+
+	}
+
+	public void answerQuestion() {
+
+		// Clear the previous question's data
 		cleanUpOldQuestion();
-		
-		//Get the question test from OCR or test source
+
+		// Get the question test from OCR or test source
 		String[] questionAndAnswers = getQAString();
-		
-		//Correct Spelling errors
+
+		// Correct Spelling errors
 		questionAndAnswers = SpellCorrector.correct(questionAndAnswers);
-	
-		//Add to the DB for Audit
-		db.addQuestion(questionAndAnswers[0], questionAndAnswers[1], questionAndAnswers[2], questionAndAnswers[3], questionAndAnswers[4]);
-		
+
+		// Add to the DB for Audit
+		db.addQuestion(questionAndAnswers[0], questionAndAnswers[1],
+				questionAndAnswers[2], questionAndAnswers[3],
+				questionAndAnswers[4]);
+
 		// Get the qID and update the interface
 		qID = db.lookupID(questionAndAnswers[0]);
-		dqwindow.setQID(qID+"");
-		
-		//Lookup the answer using single engine only
+		dqwindow.setQID(qID + "");
+
+		// Lookup the answer using single engine only
 		String decision = lookup.getAnswer(Arrays.copyOf(testQs, 4));
 		System.out.println(decision);
 		updateText(decision);
-		    
+
 	}
-	
+
 	private String[] getQAString() {
-		
+
 		String[] questionAndAnswers;
-		
+
 		if (testingMode != 1) {
 			// Get the selected images from the controller
 			qAImages = controller.getQAImages();
 
 			questionAndAnswers = new String[qAImages.length];
-			int i=0;
-			for (BufferedImage b : qAImages)
-			{
-				//Perform OCR
+			int i = 0;
+			for (BufferedImage b : qAImages) {
+				// Perform OCR
 				String recognised = ocr.recognise(b);
-				//Add to Array
+				// Add to Array
 				questionAndAnswers[i++] = recognised;
 			}
 		} else {
 			// Use a test question
-			questionAndAnswers = testQs;	
+			questionAndAnswers = testQs;
 		}
-		
+
 		return questionAndAnswers;
 	}
 
@@ -122,21 +118,18 @@ public class DonQuizote {
 		dqwindow.setQID("");
 	}
 
-	public void updateText(String s){
+	public void updateText(String s) {
 		dqwindow.updateText(s);
 	}
-	
-	private void displayImage(BufferedImage b){
+
+	private void displayImage(BufferedImage b) {
 		LoadAndShow test = new LoadAndShow(b);
-        JFrame f = new JFrame();
-        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        f.add(new JScrollPane(test));
-        f.setSize(400,400);
-        f.setLocation(200,200);
-        f.setVisible(true);
+		JFrame f = new JFrame();
+		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		f.add(new JScrollPane(test));
+		f.setSize(400, 400);
+		f.setLocation(200, 200);
+		f.setVisible(true);
 	}
-		
+
 }
-	
-
-

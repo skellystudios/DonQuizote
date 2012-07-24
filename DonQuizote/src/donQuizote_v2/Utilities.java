@@ -1,6 +1,6 @@
 package donQuizote_v2;
 
-public class StandardDeviation 
+public class Utilities 
 { 
 
 public static double StandardDeviationMean ( double[] data ) 

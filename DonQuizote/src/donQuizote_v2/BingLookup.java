@@ -21,8 +21,6 @@ class BingLookup implements Lookup
 	static XPathFactory factory = null;
 	static XPath xpath = null;
 	static XPathExpression expr = null;
-	private String question, ansA, ansB, ansC, bestguess;
-	private int confidence;
 	private int numberOfAnswers = 4;
 	
 //	// Config proxy
@@ -30,12 +28,8 @@ class BingLookup implements Lookup
 //	private static String port = "8080";
 	
 	
-	public BingLookup (String question, String ansA, String ansB, String ansC, String ansD){
-		getAnswer (question, ansA, ansB, ansC,  ansD);
-	}
 	public BingLookup(){
 	}
-	
 	
 	public String getAnswer(String[] qAs){
 
@@ -93,109 +87,24 @@ class BingLookup implements Lookup
 				
 				winner = answerIDs[maxID];
 				
-				//System.out.printf("Calc Standev\n");
-				double stanDev = StandardDeviation.standardDeviationCalculate(hits);
-				//System.out.printf("Calc Standev: " + stanDev + "\n");
-				//double mean = ((hits[0] + hits[1] + hits[2] + hits[3]) / 4);
+				
+				double stanDev = Utilities.standardDeviationCalculate(hits);
 				double sum = 0; for (double d : hits)  sum += d;	
 				double mean = sum / hits.length;
-				//System.out.printf("Calc mean: " + mean + "\n");
 				double distFromMean = maxHits - mean;
-				//System.out.printf("dist from mean: " + distFromMean + "\n");
 				double sDsFromMean = 0;
 				if (stanDev != 0) {  sDsFromMean = distFromMean / stanDev;}
-				//System.out.printf("sDs from mean: " + sDsFromMean + "\n");
 				double confidence = sDsFromMean * sDsFromMean;
-				//System.out.printf("Calc conf: " + confidence + "\n"); 
 				double finalconf = confidence / (1.333333);   // Why?
-				//System.out.printf("Flawed\n");
-				//double confidencePc = confidence * 100.0;
-				//System.out.printf("Now print\n");
+
 				
 				output = "Winner is " + winner + " with "  + sDsFromMean + " sDsFromMean => " + finalconf + " confidence";
 				System.out.printf(output);
-				//DisplayResults(answerDocsC[1]);
 				
 				}
-			catch (Exception e){ System.out.printf("Something cocked up");}
+			catch (Exception e){ System.out.printf("Error in the bing lookup #BLookup");}
 			
 				return output;
-		
-		
-		}
-	
-	
-	public String getAnswer(String question, String ansA, String ansB, String ansC, String ansD){
-
-		String result = "";
-			try {
-		
-				System.out.printf("Looking up question\n");
-		
-				//Make a nice array for people
-				double[] hits = new double[numberOfAnswers]; for (int i = 0; i < hits.length; i++){ hits[i] = 0;}
-				double[] qAndAHits = new double[numberOfAnswers];
-				double[] qHits = new double[numberOfAnswers];
-				
-				// Build and send the request.
-				Document[] answerDocsA = query(question, ansA);
-				
-				hits[0] = ReturnHits(answerDocsA[0]) / ReturnHits(answerDocsA[1]); 
-				
-				Document[] answerDocsB = query(question, ansB);
-				hits[1] = ReturnHits(answerDocsB[0]) / ReturnHits(answerDocsB[1]); 
-				
-				Document[] answerDocsC = query(question, ansC);
-				hits[2] = ReturnHits(answerDocsC[0]) / ReturnHits(answerDocsC[1]); 
-				
-				Document[] answerDocsD = query(question, ansD);
-				hits[3] = ReturnHits(answerDocsD[0]) / ReturnHits(answerDocsD[1]); 
-				
-				// No NaNs
-				for (int i = 0; i < hits.length; i++){ if ((0 < hits[i]) == false) { hits[i] = 0;}}
-				
-				// Which one won?
-				double maxHits = 0.0; int maxID = 1;	String winner;
-				String[] answerIDs = {"A", "B", "C", "D"}; 
-				
-				// Identify the winner
-				System.out.printf("Who's the winner: A: " + hits[0] + " B: "+ hits[1] + " C: "+ hits[2] + " D: "+ hits[3] + " \n");
-					for (int i = 0; i < hits.length; i++){
-						
-				//		System.out.println("Checking");
-					if (maxHits <= hits[i]){
-						maxHits = hits[i]; 
-						maxID = i;
-					}
-				}
-				
-				winner = answerIDs[maxID];
-				
-				//System.out.printf("Calc Standev\n");
-				double stanDev = StandardDeviation.standardDeviationCalculate(hits);
-				//System.out.printf("Calc Standev: " + stanDev + "\n");
-				double mean = ((hits[0] + hits[1] + hits[2] + hits[3]) / 4);
-				//System.out.printf("Calc mean: " + mean + "\n");
-				double distFromMean = maxHits - mean;
-				//System.out.printf("dist from mean: " + distFromMean + "\n");
-				double sDsFromMean = 0;
-				if (stanDev != 0) {  sDsFromMean = distFromMean / stanDev;}
-				//System.out.printf("sDs from mean: " + sDsFromMean + "\n");
-				double confidence = sDsFromMean * sDsFromMean;
-				//System.out.printf("Calc conf: " + confidence + "\n"); 
-				double finalconf = confidence / (1.333333);   // Why?
-				//System.out.printf("Flawed\n");
-				//double confidencePc = confidence * 100.0;
-				//System.out.printf("Now print\n");
-				
-				result = "Winner is " + winner + " with "  + sDsFromMean + " sDsFromMean => " + finalconf + " confidence";
-				System.out.printf(result);
-				//DisplayResults(answerDocsC[1]);
-				
-				}
-			catch (Exception e){ System.out.printf("Something cocked up");}
-			
-				return result;
 		
 		
 		}
