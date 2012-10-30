@@ -12,7 +12,6 @@ import javax.xml.xpath.XPathFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
-import java.util.Properties;
 
 
 class BingLookup implements Lookup
@@ -111,7 +110,7 @@ class BingLookup implements Lookup
 	
 	
 	public String guess() 	{ return "A";		} // Placeholder
-	public int	 confidence() { return 100; } // Placeholder
+	public Integer	 confidence() { return 100; } // Placeholder
 	public String results() { return "BB";} // Placeholder
 	 
 	
@@ -214,6 +213,7 @@ IOException
 		return total;
 	}
 	
+	@SuppressWarnings("unused")
 	private static void DisplayResponse(Document doc) throws XPathExpressionException
 	{
 		factory = XPathFactory.newInstance();

@@ -2,33 +2,26 @@ package donQuizote_v2;
 
 public class Question {
 	
-	private String q, a1, a2, a3, a4, tags;
+	/* ### answerCorrect definintions 
+	 * 0 = not known
+	 * 1 = definitely true
+	 * 2 = definitely false
+	 */
 	
-	Question(String q, String a1, String a2, String a3, String a4){
-		this.q = q;
-		this.a1 = a1;
-		this.a2 = a2;
-		this.a3 = a3;
-		this.a4 = a4;
-	}
+	public final int numberofAnswers = 4;
+	public String question;
+	public String[] answer = new String[numberofAnswers];
+	public Boolean correct;
+	public Integer[] answerCorrect = new Integer[numberofAnswers];
+	public Integer qid;
 	
-	public String question(){
-		return q;
+	public int getNextAnswer(){
+		for (int i = 0; i<numberofAnswers; i++){
+			if ((!correct && answerCorrect[i]!= 2)
+					||(correct && answerCorrect[i]== 1) ){
+				return i;
+			}
+		}
+		return 3;
 	}
-	
-	public String a1(){
-		return a1;
-	}
-	public String a2(){
-		return a2;
-	}
-	
-	public String a3(){
-		return a3;
-	}
-	
-	public String a4(){
-		return a4;
-	}
-
 }

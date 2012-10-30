@@ -2,12 +2,14 @@ package donQuizote_v2;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.*;
-import javax.imageio.ImageIO;
 import javax.swing.*;
  
 public class LoadAndShow extends JPanel {
-    BufferedImage image;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 4811955208890396888L;
+	BufferedImage image;
     Dimension size = new Dimension();
  
     public LoadAndShow(BufferedImage image) {

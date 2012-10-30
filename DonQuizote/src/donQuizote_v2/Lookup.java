@@ -5,7 +5,7 @@ public interface Lookup{
 	
 	public String getAnswer(String[] qAndAs);
 	public String guess();
-	public int	 confidence();
+	public Integer confidence();
 	public String results();
 
 	}			

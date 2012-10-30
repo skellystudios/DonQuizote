@@ -9,7 +9,6 @@ import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import javax.swing.JTextArea;
-import javax.swing.JTextPane;
 import java.awt.Component;
 import javax.swing.Box;
 import javax.swing.JTextField;
@@ -35,6 +34,7 @@ public class DQWindow implements Writable{
 				try {
 					DQWindow window = new DQWindow();
 					window.frame.setVisible(true);
+					window.frame.setAlwaysOnTop(true);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -116,7 +116,8 @@ public class DQWindow implements Writable{
 		JButton btnProcessAreas = new JButton("Process Areas");
 		btnProcessAreas.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-					dq.answerQuestion();
+					//dq.answerQuestion();
+					dq.startProcessing();
 			}
 		});
 		panel_1.add(btnProcessAreas);

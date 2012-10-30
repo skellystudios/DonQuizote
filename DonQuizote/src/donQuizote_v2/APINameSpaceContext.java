@@ -32,6 +32,7 @@ public class APINameSpaceContext implements NamespaceContext
 		throw new UnsupportedOperationException();
 	}
 	
+	@SuppressWarnings("rawtypes")
 	public Iterator getPrefixes(String arg0) 
 	{
 		throw new UnsupportedOperationException();

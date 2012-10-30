@@ -12,6 +12,7 @@ public class SpellCorrector {
 		
 		SpellChecker checker = new SpellChecker();
 		
+		
 		// Correct the question, stripping question words
 		
 	    // Ask google for some suggestions
@@ -23,6 +24,7 @@ public class SpellCorrector {
     			{
     		// Process each answer
    	    		if (sc.getConfidence() > 0) {
+   	    			
 	    			replacement = replace(replacement, qAndAs[i], sc);
 	    		}
 	       			}
@@ -32,10 +34,11 @@ public class SpellCorrector {
     		replacement =    replacement.replaceFirst(qW, "");
     	}
     	// Update the question
+    	System.out.println("Replacing "+qAndAs[i]+" with "+replacement);
     	questionAndAnswers[i] = replacement;
     			
-		} catch(Exception e){}
-		questionAndAnswers[i] = qAndAs[i];
+		} catch(Exception e){	questionAndAnswers[i] = qAndAs[i];}
+	
 		}
 		
     	return questionAndAnswers;

@@ -1,8 +1,7 @@
 package donQuizote_v2;
 
-import java.awt.BorderLayout;
+
 import java.awt.Font;
-import java.awt.Frame;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
@@ -41,7 +40,6 @@ public class GetAreaWorker extends SwingWorker<Rectangle[], String> {
 	    frame.setUndecorated(true);
 	    JTextArea outputBox = new JTextArea(5,30);
 	    outputBox.setEditable(false);
-	    //frame.add(outputBox,BorderLayout.CENTER);
 	    Font f = new Font("Arial", 30, 100);
 	    outputBox.setAlignmentY(0);
 	    outputBox.setFont(f);
@@ -67,9 +65,7 @@ public class GetAreaWorker extends SwingWorker<Rectangle[], String> {
 		
 
 	    frame.dispose();
-	   // System.out.println("Closed " + i);
-	    Rectangle test = captureArea;
-	   // System.out.println("Postclose");
+
 	    areaOutput[i] = captureArea;
 	     System.out.println("Gottit " + i + " #GetAreaWorker 1");
 	}
@@ -113,10 +109,6 @@ class TwoClickListener implements MouseListener {
 	 public Point point1;
 	 public Point point2;
 	 int clicks;
-	private Rectangle rect;
-	private Frame frame;
-	
-	private TwoClickListener(Rectangle r, Frame frame){ rect = r; clicks = 0; this.frame = frame; }
 	public  TwoClickListener() {};
 	public void mouseClicked(MouseEvent e) {
 

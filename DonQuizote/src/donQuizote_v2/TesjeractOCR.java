@@ -8,7 +8,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel.MapMode;
@@ -21,7 +20,6 @@ import javax.imageio.stream.ImageOutputStream;
 import net.gencsoy.tesjeract.EANYCodeChar;
 import net.gencsoy.tesjeract.Tesjeract;
 
-import org.junit.Test;
 
 public class TesjeractOCR extends OCREngine {
 	static {
@@ -29,6 +27,7 @@ public class TesjeractOCR extends OCREngine {
 			System.loadLibrary("tessdll");
 
 		System.loadLibrary("tesjeract");
+		@SuppressWarnings("unused") // Yeah, we need to do this for initialisation purposes, I think.
 		IIORegistry registry = IIORegistry.getDefaultInstance();  
 		//registry.registerServiceProvider(new TIFFImageWriterSpi());  
 		//registry.registerServiceProvider(new TIFFImageReaderSpi()); 
