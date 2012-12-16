@@ -12,37 +12,60 @@ public class SpellCorrector {
 		
 		SpellChecker checker = new SpellChecker();
 		
-		
-		// Correct the question, stripping question words
+		// Correct the question
 		
 	    // Ask google for some suggestions
 		for (int i=0; i<qAndAs.length; i++){
-	    SpellResponse spellResponse = checker.check( qAndAs[i] );
-		try {
-			String replacement = qAndAs[i];
-    	for( SpellCorrection sc : spellResponse.getCorrections() )
-    			{
-    		// Process each answer
-   	    		if (sc.getConfidence() > 0) {
-   	    			
-	    			replacement = replace(replacement, qAndAs[i], sc);
-	    		}
-	       			}
-    	// Strip question words and phrases
-    	String[] questionWords = {"which of the following", "which", "what", "where", "how many"};
-    	for (String qW : questionWords) {
-    		replacement =    replacement.replaceFirst(qW, "");
-    	}
-    	// Update the question
-    	System.out.println("Replacing "+qAndAs[i]+" with "+replacement);
-    	questionAndAnswers[i] = replacement;
-    			
-		} catch(Exception e){	questionAndAnswers[i] = qAndAs[i];}
+		    SpellResponse spellResponse = checker.check( qAndAs[i] );
+			try {
+				String replacement = qAndAs[i];
+		    	for( SpellCorrection sc : spellResponse.getCorrections() )
+		    		{
+		    		// Process each answer
+		   	    		if (sc.getConfidence() > 0) {
+		   	    			replacement = replace(replacement, qAndAs[i], sc);
+		   	    		}
+			       }
+		    	
+		    	
+		    	// Update the question
+		    	System.out.println("Replacing "+qAndAs[i]+" with "+replacement);
+		    	questionAndAnswers[i] = replacement;
+		    			
+			} 
+			catch(Exception e)
+			{	
+				questionAndAnswers[i] = qAndAs[i];
+			}
 	
 		}
 		
     	return questionAndAnswers;
  
+	
+	}
+	
+	public static String[] stripQuestionWords(String[] strings){
+		
+
+		String[] correctedStringArray = new String[strings.length];
+		
+
+	    // Ask google for some suggestions
+		for (int i=0; i<strings.length; i++){
+		   
+			String replacement = strings[i];
+			
+			// Strip question words and phrases
+	    	String[] questionWords = {"which of the following", "which", "what", "where", "how many"};
+	    	for (String qW : questionWords) {
+	    		replacement = replacement.replaceFirst(qW, "");
+	    	}
+	    	
+	    	correctedStringArray[i] = replacement;
+		}
+			
+		return correctedStringArray;
 	
 	}
 	

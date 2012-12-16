@@ -22,9 +22,14 @@ public class DonQuizote {
 	private String[] testQs = { "Who which director directed the film Psycho?",
 			"Alfred Hitchcock", "The Cohen Brothers", "Steven Spielburg",
 			"Quentin Tarrentino" };
+	private static DonQuizote dq;
 
 	public static void main(String[] args) {
-		new DonQuizote();
+		dq = new DonQuizote();
+	}
+	
+	public static DonQuizote getInstance(){
+		return dq;
 	}
 
 	// Main thread
@@ -41,10 +46,11 @@ public class DonQuizote {
 		// Connect to the Database
 		db = new DBDriver();
 		// Add a lookup engine
-		lookup = new BingLookup();
+		//lookup = new BingLookup(); // Fuck bing
+		lookup = new EntireWebLookup();
 		
 		// Keep track of the state
-		fsm = new FiniteStateMachine(controller);
+		fsm = new FiniteStateMachine(this, controller);
 	}
 
 	// Define the recognition areas
@@ -52,23 +58,31 @@ public class DonQuizote {
 		controller.setAreas();
 
 	}
+	
+	public void getColour(){
+		dqwindow.updateText("DQ: colour is " + controller.startPageColour());
+	}
 
 	public void startProcessing(){
-		System.out.println("DQ: colour is " + controller.startPageColour());
-		fsm.doAction();
+		while(!fsm.killSwitch){
+			fsm.doAction();
+		}
 		//fsm.main
 		
 	}
 	
 	// This standalone method will select the question fo	
-	public void answerQuestion() {
+	public String answerQuestion() {
 
+		System.out.println("#DQ: QuestionTime");
+		
 		// Clear the previous question's data
 		cleanUpOldQuestion();
 
 		// Get the question test from OCR or test source
 		String[] questionAndAnswers = getQAString();
-
+		System.out.println("#DQ: Got QAs");
+		
 		// Correct Spelling errors
 		String [] questionAndAnswersCorrected = SpellCorrector.correct(questionAndAnswers);
 		// TODO: FOR THE LOVE OF GOD STRIP OUT QUOTES OR MY DB DRIVER IS GONNA CRY. Probably should do it here for future matching purposes. Porpoises.
@@ -87,14 +101,16 @@ public class DonQuizote {
 		Question q = db.lookupQuestion(questionAndAnswersCorrected[0]);
 		dqwindow.setQID(qID + "");
 		
-		/*
+		String[] qAndAWithoutQuestions = SpellCorrector.stripQuestionWords(questionAndAnswersCorrected);
 		
 		// Lookup the answer using single engine only
-		String decision = lookup.getAnswer(questionAndAnswersCorrected);
-		System.out.println(decision);
-		updateText(decision);
+		String[] decisions = lookup.getAnswer(qAndAWithoutQuestions);
+		System.out.println(decisions[0]);
+		updateText(decisions[0]);
 		
-		*/
+		return decisions[0];
+		
+		
 
 	}
 

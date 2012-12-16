@@ -1,6 +1,11 @@
 package donQuizote_v2;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.net.URLConnection;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -12,6 +17,8 @@ import javax.xml.xpath.XPathFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+
+import org.apache.commons.codec.binary.Base64;
 
 
 class BingLookup implements Lookup
@@ -30,7 +37,70 @@ class BingLookup implements Lookup
 	public BingLookup(){
 	}
 	
-	public String getAnswer(String[] qAs){
+	public static void main(String[] args) throws IOException{
+		String st = "hey";
+        String bingUrl = "https://api.datamarket.azure.com/Data.ashx/Bing/Search/v1/Composite?" +
+        		"Sources=%27web%27&" +
+        		"Query=%27"+st+"%27" +
+        		"&WebSearchOptions=%27DisableQueryAlterations%27" +
+        		"&Market=%27en-US%27" +
+        		"&$top=50" +
+        		"&$format=Atom";
+
+        String accountKey = "amnSjlBAdRgkD1YQcZFdmZS9nSQopCQIWnFtM51kxnw=";
+        String aKey = accountKey + ":" + accountKey;
+
+		byte[] accountKeyBytes =  Base64.encodeBase64(aKey.getBytes());
+        String accountKeyEnc = new String(accountKeyBytes);
+
+        URL url = new URL(bingUrl);
+        URLConnection urlConnection = url.openConnection();
+        urlConnection.setRequestProperty("Authorization", "Basic " + accountKeyEnc);     
+        //FROM HERE DOWN IS WHAT SEEMS TO TAKE FOREVER. 
+        
+        InputStream is = urlConnection.getInputStream();
+       
+        /*
+        // Read to sdout
+        InputStreamReader isr = new InputStreamReader(is);
+        int numCharsRead;
+        char[] charArray = new char[1024];
+        StringBuilder sb = new StringBuilder();
+        while ((numCharsRead = isr.read(charArray)) > 0) {
+            sb.append(charArray, 0, numCharsRead);
+        }
+        */
+        
+        
+        // Read to XML
+    	try {
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        DocumentBuilder db = null;
+		try {
+			db = dbf.newDocumentBuilder();
+		} catch (ParserConfigurationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		///new URL(url).openStream()
+		Document doc = db.parse(is);
+		} catch (SAXException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+       // System.out.println(sb.toString());
+        
+        
+        ////d:WebTotal
+        
+    }
+
+
+
+	
+	public String[] getAnswer(String[] qAs){
 
 		String output = "";
 			try {
@@ -52,6 +122,7 @@ class BingLookup implements Lookup
 					aHits[i] = ReturnHits(answerDoc[1]);
 					totalHits += qAndAHits[i];
 				}
+				
 				
 				// If we have any q&a hits, then use ratios. Otherwise do just answers
 				if (totalHits > 0)
@@ -103,7 +174,11 @@ class BingLookup implements Lookup
 				}
 			catch (Exception e){ System.out.printf("Error in the bing lookup #BLookup");}
 			
-				return output;
+			String[] s = new String[1];
+			s[0] = output;
+			s[1] = output;
+			return s;
+			
 		
 		
 		}

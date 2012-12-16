@@ -21,5 +21,17 @@
 	<classpathentry kind="lib" path="C:/Users/Michael/Coding/Libraries/apache-log4j-1.2.17/log4j-1.2.17.jar"/>
 	<classpathentry kind="lib" path="C:/Users/Michael/Coding/Libraries/mysql-connector-java-5.1.21/mysql-connector-java-5.1.21-bin.jar"/>
 	<classpathentry kind="lib" path="forms-1.3.0.jar" sourcepath="forms-1.3.0-src.zip"/>
+	<classpathentry kind="lib" path="miglayout15-swing.jar" sourcepath="miglayout-src.zip"/>
+	<classpathentry kind="lib" path="C:/Users/Michael/Coding/Libraries/commons-codec-1.7/commons-codec-1.7.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Michael/Coding/Libraries/json-lib-2.4-jdk15.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Michael/Coding/Libraries/commons-lang3-3.1/commons-lang3-3.1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Michael/Coding/Libraries/commons-lang3-3.1/commons-lang3-3.1-sources.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Michael/Coding/Libraries"/>
+	<classpathentry kind="lib" path="C:/Users/Michael/Coding/Libraries/commons-lang-2.6/commons-lang-2.6.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Michael/Coding/Libraries/commons-logging-1.1.1/commons-logging-1.1.1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Michael/Coding/Libraries/ezmorph-1.0.2.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Michael/Coding/Libraries/commons-collections-3.2.1/commons-collections-3.2.1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Michael/Coding/Libraries/commons-beanutils-1.8.3/commons-beanutils-1.8.3.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Michael/Coding/Libraries/xom-1.2.8.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

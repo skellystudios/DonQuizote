@@ -2,6 +2,7 @@ package donQuizote_v2;
 
 import java.awt.Rectangle;
 import java.awt.Robot;
+import java.awt.event.InputEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.BufferedImageOp;
 import java.awt.image.ColorModel;
@@ -35,6 +36,7 @@ public class QuizController {
 	private Rectangle playForRealButton() {return translatedRectangle(136,257,145,101,700,519);}
 	private Rectangle playForFreeButton() {return translatedRectangle(438,268,105,77,700,519);}
 	private Rectangle checkStartScreenGreen() {return translatedRectangle(443,325,48,35,799,519);}
+	private Rectangle twoWayTrafficLogo() {return translatedRectangle(20,450,70,15,700,519);}
 	
 	private Rectangle splitBlackContinueCollect() {return translatedRectangle(42,399,25,21,705,519);}
 	
@@ -118,31 +120,68 @@ public class QuizController {
 		//System.out.println("translated rectangle, totalArea size " + totalArea.height + " x " + totalArea.height);
 		float translatedX = (float) x/masterX; 
 		float translatedY = (float) y/masterY;
-		float translatedW = (float) w/masterX; System.out.println("#QC TransW " + translatedW);
+		float translatedW = (float) w/masterX; //System.out.println("#QC TransW " + translatedW);
 		float translatedH = (float) h/masterY;
 		
 		int newX = (int)(totalArea.x+translatedX*totalArea.width);
 		int newY = (int) (totalArea.y+translatedY*totalArea.height);
 		int newWidth = (int) (translatedW*totalArea.width);
 		int newHeight = (int) (translatedH*totalArea.height);
-		System.out.println("#QC X " + newX + " Y " + newY + " W " + newWidth + " H" + newHeight);
+		//System.out.println("#QC X " + newX + " Y " + newY + " W " + newWidth + " H" + newHeight);
 		return new Rectangle(newX, newY, newWidth, newHeight);	
 	}
 	
 	/*
+	 * START LOCATION CHECKS
 	  The following are sets of checks used by the FSM to check where we are
 	*/
-	public Boolean isStartPage(){
-		return (getModalColour(getImage(checkStartScreenGreen())) == -16747628);
-	}
+	public Boolean isStartPage(){ return (getModalColour(getImage(checkStartScreenGreen())) == -16747628);	}
+	public Boolean is2WayTraffic(){	return (getModalColour(getImage(twoWayTrafficLogo())) == -1);	}
+	public Boolean isFFF(){	return ( ColourTester.compare(getModalColour(getImage(fffTimer())),-5384655)) < 150 ;}
+	/* 
+	 * END LOCATION CHECKS
+	 */
 	
 	public int startPageColour(){
-		return getModalColour(getImage(checkStartScreenGreen()));
+		return getModalColour(getImage(fffTimer()));
 	}
 	
 	// 
-	public int getModalColour(BufferedImage image){
+	//7551175
 	
+	// Press this to use play money only
+	public void pressDemoButton() {	clickAreaCentre(playForFreeButton()); }
+	// Press this to start the game
+	public void pressPlayButton() {	clickAreaCentre(playButton());	}
+	// Skip the pointless bit
+	public void pressSkipButton() {	clickAreaCentre(skipButton());	}
+	// Supress Chris talent's smug face
+	public void skipChris() {	clickAreaCentre(skipButton());	 }
+	public void pressA() { clickAreaCentre(answerAArea());}
+	public void pressB() { clickAreaCentre(answerBArea());}
+	public void pressC() { clickAreaCentre(answerCArea());}
+	public void pressD() { clickAreaCentre(answerDArea());}
+	
+	// Use this to copy a buffered image (properly, like)
+	static BufferedImage deepCopy(BufferedImage bi) {
+		ColorModel cm = bi.getColorModel();
+		boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
+		WritableRaster raster = bi.copyData(null);
+		return new BufferedImage(cm, raster, isAlphaPremultiplied, null);
+	}
+	
+	public void clickAreaCentre(Rectangle r){
+		int x = (int) (r.x + 0.5*r.width);
+		int y = (int) (r.y + 0.5*r.height);
+		robot.mouseMove(x, y);
+		robot.mousePress(InputEvent.BUTTON1_MASK);
+		robot.mouseRelease(InputEvent.BUTTON1_MASK);
+		
+		
+	}
+	
+	public int getModalColour(BufferedImage image){
+		
 		// We get an average colour by shrinking the image to 1x1 and letting the GPU doing the averaging
 		BufferedImage copy = deepCopy(image);
 		
@@ -150,6 +189,7 @@ public class QuizController {
 		// Loop over every pixel in the image and add to total RBG.
 		for (int i = 0; i < copy.getWidth() ; i++){
 			for (int j = 0; j < copy.getHeight() ; j++){
+				
 				int rgb = copy.getRGB(i,j);
 				Integer counter = m.get(rgb);
 				if (counter == null) counter = 0;
@@ -167,29 +207,4 @@ public class QuizController {
 		*/
 		return colour;
 	}
-	
-	
-	// Use this to copy a buffered image (properly, like)
-	static BufferedImage deepCopy(BufferedImage bi) {
-		ColorModel cm = bi.getColorModel();
-		boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
-		WritableRaster raster = bi.copyData(null);
-		return new BufferedImage(cm, raster, isAlphaPremultiplied, null);
-	}
-	
-	// Press this to use play money only
-	public void pressDemoButton() {
-		clickAreaCentre(playForFreeButton());
-	}
-	
-	public void clickAreaCentre(Rectangle r){
-		int x = (int) (r.x + 0.5*r.width);
-		int y = (int) (r.y + 0.5*r.height);
-		robot.mouseMove(x, y);
-		robot.mousePress(1);
-		robot.mouseRelease(1);
-		
-		
-	}
-	
 }
