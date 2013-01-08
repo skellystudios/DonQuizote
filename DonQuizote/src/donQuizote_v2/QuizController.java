@@ -12,91 +12,113 @@ import java.awt.image.WritableRaster;
 import java.util.HashMap;
 //import sun.awt.image.ToolkitImage;
 
+import com.mortennobel.imagescaling.ResampleOp;
+
 public class QuizController {
 
 	// The things they carried
 	private Writable outputWriter;
 	private Robot robot;
 	private final int NumberOfAreas = 1;
-	private Rectangle[] areas = new Rectangle[NumberOfAreas];
-
+	public HashMap<String, Rectangle> areas = new HashMap<String, Rectangle>();
 	// Viewing areas, provided as an offset from the game's frame, and a % width/height
 	private Rectangle totalArea;
-	
-	private Rectangle answerAArea() 	{return translatedRectangle(89,543,303,34,874,648);}
-	private Rectangle answerBArea() 	{return translatedRectangle(518,543,303,34,874,648);}
-	private Rectangle answerCArea() 	{return translatedRectangle(89,601,303,34,874,648);}
-	private Rectangle answerDArea() 	{return translatedRectangle(518,601,303,34,874,648);}
-	private Rectangle questionArea()	{return translatedRectangle(62,462,585,60,874,648);}
+	private Rectangle adminArea;
+	private DQWindow dqwindow;
+	private DonQuizote dq;
 		
-	private Rectangle skipButton() 		{return translatedRectangle(634,455,42,31,703,520);}
-	private Rectangle playButton() 		{return translatedRectangle(598,287,66,34,700,519);}
-	private Rectangle fffTimer() 		{return translatedRectangle(122,100,32,21,701,521);}
-	private Rectangle splitPurple() 	{return translatedRectangle(680,123,20,28,702,519);}
-	private Rectangle playForRealButton() {return translatedRectangle(136,257,145,101,700,519);}
-	private Rectangle playForFreeButton() {return translatedRectangle(438,268,105,77,700,519);}
-	private Rectangle checkStartScreenGreen() {return translatedRectangle(443,325,48,35,799,519);}
-	private Rectangle twoWayTrafficLogo() {return translatedRectangle(20,450,70,15,700,519);}
-	
-	private Rectangle splitBlackContinueCollect() {return translatedRectangle(42,399,25,21,705,519);}
-	
-	
-	/*(
-	private Rectangle answerAArea() {return translatedRectangle((float)80/744,(float)457/546,(float)250/744,(float) 27/546);}
-	private Rectangle answerBArea() {return translatedRectangle((float)436/744,(float)457/546,(float)250/744,(float) 27/546);}
-	private Rectangle answerCArea() {return translatedRectangle((float)80/744,(float)507/546,(float)250/744,(float) 27/546);}
-	private Rectangle answerDArea() {return translatedRectangle((float)436/744,(float)507/546,(float)250/744,(float) 27/546);}
-	private Rectangle questionArea() {return translatedRectangle((float) 100/965, r(float)501/708, (float) 787/965, (float)69/708);}
-	*/
-	
-	
-	// Invertion table
-	private final short[] invertTable; 
-	{ invertTable = new short[256];
-	for (int i = 0; i < 256; i++) {
-	invertTable[i] = (short) (255 - i); } }
 	
 	// Instantiate this	
-	public QuizController(Writable w){
+	public QuizController(DonQuizote dq){
 		try{ robot = new Robot(); } catch (Exception e){};
-		this.outputWriter = w;
+		this.dq = dq;
+		this.dqwindow = dq.dqwindow;
+		
 	}
 	
-	// Get one or more areas, and use them to set the Area[] array. Maybe need to parameterise this for # of areas
+	// Retrieve the rectangle for an area
+	public Rectangle getArea(String s){	
+		return areas.get(s);
+		}
+	
+	// After the main area has been selected, define the interesting regions
+	private void setupAreas(){
+		System.out.println("#QC Set-up subsequent areas");
+		areas.put("answerA", translatedRectangle(89,543,303,33,874,648));
+		areas.put("answerB", translatedRectangle(518,543,303,33,874,648));
+		areas.put("answerC", translatedRectangle(89,601,303,33,874,648));
+		areas.put("answerD", translatedRectangle(413,482,237,26,699,517));
+		areas.put("question", translatedRectangle(50,372,592,43,700,517));
+		areas.put("skipButton", translatedRectangle(634,455,42,31,703,520));
+		areas.put("playButton", translatedRectangle(598,287,66,34,700,519));
+		areas.put("fffTimer", translatedRectangle(122,100,32,21,701,521));
+		areas.put("checkStartScreenGreen", translatedRectangle(463,325,48,35,799,519));
+		areas.put("twoWayTrafficLogo", translatedRectangle(20,450,70,15,700,519));
+		// What is this?
+		areas.put("splitPurple", translatedRectangle(680,123,20,28,702,519));
+		// TODO: Choose the best of these please
+		areas.put("playForRealButton", translatedRectangle(136,257,145,101,700,519));
+		areas.put("playForFreeButton", translatedRectangle(438,268,105,77,700,519));
+
+		// TODO: How useful is this?
+		areas.put("splitBlackContinueCollect", translatedRectangle(42,399,25,21,705,519));
+
+	}
+	
+	// Click a named area from the areas map
+	public void click(String s){
+		clickAreaCentre(getArea(s)); 
+		}
+	
+	// Get an area, and use it to set the play area (totalArea). 
 	// Current usage is to just capture the whole game area and segregate off manually later
 	public void setAreas(){
-		outputWriter.updateText("Selecting OCR areas");
+		dqwindow.updateText("Selecting OCR areas");
 		GetAreaWorker worker = new GetAreaWorker(NumberOfAreas){
 		@Override
 		 protected void done2(){
 			try {
-				areas = areaOutput;
-				totalArea = areas[0];
+				// Set the total area
+				totalArea = areaOutput[0];
+				System.out.println("#QC Set totalarea");
+				 // Set up the rest of the areas
+				setupAreas();
+		    	}
+			catch(Exception e){ e.printStackTrace();   }
+		      }
+		    };
+		  try { worker.execute(); }
+		  catch (Exception e){	e.printStackTrace(); }	
+	}
+
+	public void setAdminAreas(){
+		GetAreaWorker worker = new GetAreaWorker(1){
+		@Override
+		 protected void done2(){
+			try {
+				adminArea = areaOutput[0];
 		    	}catch(Exception e){ e.printStackTrace();   }
 		      }
 		    };
 		  try { worker.execute(); }
 		  catch (Exception e){	e.printStackTrace(); }		
 	}
-
+	
 	// Specifically return an array of images with the questions and the answers
 	public BufferedImage[] getQAImages() {
 		BufferedImage[] qAImages = new BufferedImage[5];
-		qAImages[0] = getInvertedImage(questionArea());
-		qAImages[1] = getInvertedImage(answerAArea());
-		qAImages[2] = getInvertedImage(answerBArea());
-		qAImages[3] = getInvertedImage(answerCArea());
-		qAImages[4] = getInvertedImage(answerDArea());
-		
+		qAImages[0] = getInvertedImage(getArea("question"));
+		qAImages[1] = getInvertedImage(getArea("answerA"));
+		qAImages[2] = getInvertedImage(getArea("answerB"));
+		qAImages[3] = getInvertedImage(getArea("answerC"));
+		qAImages[4] = getInvertedImage(getArea("answerD"));
 		return qAImages;
 	}
 	
-	private BufferedImage getInvertedImage(Rectangle captureArea){
-		return invertImage(getImage(captureArea));
-	}
 	
-	// Grab the area image from the Robot AND INVERT IT
-	private BufferedImage getImage(Rectangle captureArea){
+	
+	// Grab the area image from the Robot
+	public BufferedImage getImage(Rectangle captureArea){
 		try { 
 			BufferedImage image = robot.createScreenCapture(captureArea);
 			return image;
@@ -105,13 +127,17 @@ public class QuizController {
 			return null;
 		}
 	}
-
+	
+	public BufferedImage getInvertedImage(Rectangle captureArea){
+		return invertImage(getImage(captureArea));
+	}
+	
 	// Invert an image
-	private BufferedImage invertImage(final BufferedImage src) {
+	private static BufferedImage invertImage(final BufferedImage src) {
 		final int w = src.getWidth();
 		final int h = src.getHeight();
 		final BufferedImage dst = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-		final BufferedImageOp invertOp = new LookupOp(new ShortLookupTable(0, invertTable), null);
+		final BufferedImageOp invertOp = new LookupOp(new ShortLookupTable(0, invertTable()), null);
 		return invertOp.filter(src, dst);
 	}
 	
@@ -131,44 +157,7 @@ public class QuizController {
 		return new Rectangle(newX, newY, newWidth, newHeight);	
 	}
 	
-	/*
-	 * START LOCATION CHECKS
-	  The following are sets of checks used by the FSM to check where we are
-	*/
-	public Boolean isStartPage(){ return (getModalColour(getImage(checkStartScreenGreen())) == -16747628);	}
-	public Boolean is2WayTraffic(){	return (getModalColour(getImage(twoWayTrafficLogo())) == -1);	}
-	public Boolean isFFF(){	return ( ColourTester.compare(getModalColour(getImage(fffTimer())),-5384655)) < 150 ;}
-	/* 
-	 * END LOCATION CHECKS
-	 */
-	
-	public int startPageColour(){
-		return getModalColour(getImage(fffTimer()));
-	}
-	
-	// 
-	//7551175
-	
-	// Press this to use play money only
-	public void pressDemoButton() {	clickAreaCentre(playForFreeButton()); }
-	// Press this to start the game
-	public void pressPlayButton() {	clickAreaCentre(playButton());	}
-	// Skip the pointless bit
-	public void pressSkipButton() {	clickAreaCentre(skipButton());	}
-	// Supress Chris talent's smug face
-	public void skipChris() {	clickAreaCentre(skipButton());	 }
-	public void pressA() { clickAreaCentre(answerAArea());}
-	public void pressB() { clickAreaCentre(answerBArea());}
-	public void pressC() { clickAreaCentre(answerCArea());}
-	public void pressD() { clickAreaCentre(answerDArea());}
-	
-	// Use this to copy a buffered image (properly, like)
-	static BufferedImage deepCopy(BufferedImage bi) {
-		ColorModel cm = bi.getColorModel();
-		boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
-		WritableRaster raster = bi.copyData(null);
-		return new BufferedImage(cm, raster, isAlphaPremultiplied, null);
-	}
+
 	
 	public void clickAreaCentre(Rectangle r){
 		int x = (int) (r.x + 0.5*r.width);
@@ -180,9 +169,22 @@ public class QuizController {
 		
 	}
 	
+	/*
+	 * ALL THE COLOUR GRABBING STUFF
+	 */
+	
+	// Use this to copy a buffered image (properly, like)
+	static BufferedImage deepCopy(BufferedImage bi) {
+		ColorModel cm = bi.getColorModel();
+		boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
+		WritableRaster raster = bi.copyData(null);
+		return new BufferedImage(cm, raster, isAlphaPremultiplied, null);
+	}
+	
+
+	
 	public int getModalColour(BufferedImage image){
 		
-		// We get an average colour by shrinking the image to 1x1 and letting the GPU doing the averaging
 		BufferedImage copy = deepCopy(image);
 		
 		HashMap<Integer, Integer> m = new HashMap<Integer, Integer>();
@@ -207,4 +209,58 @@ public class QuizController {
 		*/
 		return colour;
 	}
+	
+	public int getMeanColour(BufferedImage image){
+		
+		// We get an average colour by shrinking the image to 1x1 and letting the GPU doing the averaging
+		ResampleOp  resampleOp = new ResampleOp (3,3);
+		BufferedImage copy= resampleOp.filter(image, null);
+		
+		int colour = copy.getRGB(1, 1);
+				
+		return colour;
+	}
+	
+	public String getRectangeDims(){
+		return "" + ((int) adminArea.getX()- totalArea.getX()) +","+  ((int) adminArea.getY()- totalArea.getY()) +","+  ((int) adminArea.getWidth()) +","+  ((int) adminArea.getHeight()) +","+  ((int) totalArea.getWidth()) +","+  ((int) totalArea.getHeight());
+	}
+	
+	public BufferedImage getAdminTest(){
+		return getImage(translatedRectangle((int)(adminArea.getX()- totalArea.getX()),(int)(adminArea.getY()- totalArea.getY()),(int)adminArea.getWidth(), (int)adminArea.getHeight(),(int)totalArea.getWidth(),(int)totalArea.getHeight()));
+				
+	}
+	
+	public BufferedImage getAdminImage(){
+		return getImage(adminArea);
+	}
+	
+	
+
+	//TODO: Rename this, dawg.
+	public int startPageColour(){
+		return getModalColour(getImage(adminArea));
+	}
+	
+	public int meanPageColour(){
+		return getMeanColour(getImage(adminArea));
+	}
+	
+	//TODO: Rename this, dawg.
+	public void getColour(){
+		//displayImage(controller.getAdminImage()); 
+		//displayImage(controller.getAdminTest()); 
+		dqwindow.updateText("DQ: area is " + getRectangeDims());
+		dqwindow.updateText("DQ: modal colour is " + startPageColour());
+		dqwindow.updateText("DQ: mean colour is " + meanPageColour());
+	}
+	
+
+	// Invertion table
+	private static final short[] invertTable()
+	{ short[] invertTable = new short[256];
+	for (int i = 0; i < 256; i++) {
+	invertTable[i] = (short) (255 - i); } 
+	return invertTable;
+	}
+	
 }

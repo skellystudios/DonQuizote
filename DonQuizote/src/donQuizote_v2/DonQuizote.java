@@ -1,21 +1,25 @@
 package donQuizote_v2;
 
 
+import java.awt.Toolkit;
+import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.util.Arrays;
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 
+import donQuizote_v2.FiniteStateMachine.State;
+
 
 public class DonQuizote {
 
 	// Desiderata
-	private QuizController controller;
+	public QuizController controller;
 	private OCREngine ocr;
 	private DBDriver db;
 	private BufferedImage[] qAImages;
 	private Lookup lookup;
-	private DQWindow dqwindow;
+	public DQWindow dqwindow;
 	public int qID;
 	private FiniteStateMachine fsm;
 	private Boolean testingMode = false;
@@ -23,6 +27,7 @@ public class DonQuizote {
 			"Alfred Hitchcock", "The Cohen Brothers", "Steven Spielburg",
 			"Quentin Tarrentino" };
 	private static DonQuizote dq;
+	private Overlay overlay;
 
 	public static void main(String[] args) {
 		dq = new DonQuizote();
@@ -32,7 +37,7 @@ public class DonQuizote {
 		return dq;
 	}
 
-	// Main thread
+	// Main setup
 	public DonQuizote() {
 
 		// Load the OCR Engine
@@ -42,34 +47,105 @@ public class DonQuizote {
 		// Prepare the interface
 		dqwindow = new DQWindow(this);
 		// Load the controller
-		controller = new QuizController(dqwindow);
+		controller = new QuizController(this);
 		// Connect to the Database
 		db = new DBDriver();
 		// Add a lookup engine
 		//lookup = new BingLookup(); // Fuck bing
-		lookup = new EntireWebLookup();
-		
+		//lookup = new EntireWebLookup();
+		lookup = new BingAzureLookup();
 		// Keep track of the state
 		fsm = new FiniteStateMachine(this, controller);
 	}
 
-	// Define the recognition areas
-	public void setAreas() {
-		controller.setAreas();
-
-	}
-	
-	public void getColour(){
-		dqwindow.updateText("DQ: colour is " + controller.startPageColour());
-	}
-
 	public void startProcessing(){
-		while(!fsm.killSwitch){
-			fsm.doAction();
+		
+		fsm.state = State.CHOICEPAGE;
+		
+		while(!(fsm.killSwitch == true)){	
+			doAction();
 		}
-		//fsm.main
+	}
+
+	public void doAction(){
+		/*
+		 *  The general idea is that at each point we should check 
+		 *  we are where we think, and then perform discrete actions
+		 *  until we have made a state transition, and mark what we think that transition is
+		 *  
+		 *  If the check fails, we should either go into a panic mode and refresh the 
+		 *  browser and start again, or we should attempt to guess the most likely state
+		 */
+		
+		
+		fsm.checkCaps();
+		
+		State state = fsm.state;
+		System.out.println("#DQ: Arrived at " + state);
+		updateState('S' + state.toString());
+		
+		switch(state){
+
+			case CHOICEPAGE:
+				controller.click("playForFreeButton");
+				snooze(2000);
+				fsm.doTransaction(40);
+				break;
+			// This is the splash page where we pick PLAY or REAL money 
+			case PLAYPAGE:
+				controller.click("playButton");	snooze(2000);
+				controller.click("skipButton");	snooze(2000);
+				controller.click("playForFreeButton"); snooze(2000);
+				fsm.doTransaction(4000);
+				break;
+			case FFF:
+				snooze(200);
+				controller.click("playButton");
+				controller.click("answerA"); snooze(700);
+				controller.click("answerB"); snooze(700);
+				controller.click("answerC"); snooze(700);
+				controller.click("answerD"); 
+				snooze(12000);
+				fsm.doTransaction(200);
+				break;
+			case ISCOLLECT:
+				snooze(100);
+				fsm.doTransaction(200);
+				break;
+			case SCOREBOARD:
+				snooze(1000);
+				fsm.doTransaction(400);
+				break;
+			case QUESTION:
+				//OH THIS IS THE BIG ONE
+				// Get the mouse out of the way
+				controller.click("playButton");
+				snooze(4000);
+				String winner = dq.answerQuestion();
+				if (winner == "A") controller.click("answerA");
+				if (winner == "B") controller.click("answerB");
+				if (winner == "C") controller.click("answerC");
+				if (winner == "D") controller.click("answerD");
+				fsm.doTransaction(40);
+				break;
+			default: 
+				snooze(100); // Chill out a little
+		}
 		
 	}
+	
+	public void snooze(int i){
+		fsm.snooze(i);
+	}
+	
+	public void toggleOverlay() {
+		if (overlay == null){
+			overlay = new Overlay();
+			overlay.addRectangles(controller.areas);} 	
+		overlay.setVisible(!overlay.isVisible());
+	}
+	
+
 	
 	// This standalone method will select the question fo	
 	public String answerQuestion() {
@@ -85,9 +161,14 @@ public class DonQuizote {
 		
 		// Correct Spelling errors
 		String [] questionAndAnswersCorrected = SpellCorrector.correct(questionAndAnswers);
+		
+		// Also get rid of quote marks and change all | and / into L, because it probably should be.
+		questionAndAnswersCorrected = SpellCorrector.correctChars(questionAndAnswersCorrected);
+		
 		// TODO: FOR THE LOVE OF GOD STRIP OUT QUOTES OR MY DB DRIVER IS GONNA CRY. Probably should do it here for future matching purposes. Porpoises.
 		
-		
+		/*
+		 
 		// Add to the DB for Audit
 		db.addQuestion(questionAndAnswersCorrected[0], questionAndAnswersCorrected[1],
 				questionAndAnswersCorrected[2], questionAndAnswersCorrected[3],
@@ -101,6 +182,8 @@ public class DonQuizote {
 		Question q = db.lookupQuestion(questionAndAnswersCorrected[0]);
 		dqwindow.setQID(qID + "");
 		
+		*/
+		
 		String[] qAndAWithoutQuestions = SpellCorrector.stripQuestionWords(questionAndAnswersCorrected);
 		
 		// Lookup the answer using single engine only
@@ -108,7 +191,7 @@ public class DonQuizote {
 		System.out.println(decisions[0]);
 		updateText(decisions[0]);
 		
-		return decisions[0];
+		return decisions[1];
 		
 		
 
@@ -124,7 +207,7 @@ public class DonQuizote {
 
 			questionAndAnswers = new String[qAImages.length];
 			int i = 0;
-			displayImage(qAImages[1]);
+			//displayImage(qAImages[1]);
 			for (BufferedImage b : qAImages) {
 				// Perform OCR
 				String recognised;
@@ -156,16 +239,11 @@ public class DonQuizote {
 	public void updateText(String s) {
 		dqwindow.updateText(s);
 	}
-
-	@SuppressWarnings("unused")
-	private void displayImage(BufferedImage b) {
-		LoadAndShow test = new LoadAndShow(b);
-		JFrame f = new JFrame();
-		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		f.add(new JScrollPane(test));
-		f.setSize(b.getWidth(), b.getHeight());
-		f.setLocation(200, 200);
-		f.setVisible(true);
+	
+	public void updateState(String s) {
+		dqwindow.updateState(s);
 	}
+
+	
 
 }

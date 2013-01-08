@@ -8,6 +8,8 @@ import java.awt.BorderLayout;
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.image.BufferedImage;
+
 import javax.swing.JTextArea;
 import java.awt.Component;
 import javax.swing.Box;
@@ -28,6 +30,9 @@ import javax.swing.JTabbedPane;
 import java.awt.FlowLayout;
 import javax.swing.JComboBox;
 import javax.swing.JScrollPane;
+import javax.swing.JMenuBar;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 
 public class DQWindow implements Writable{
 
@@ -35,6 +40,7 @@ public class DQWindow implements Writable{
 	private DonQuizote dq;
 	private JTextArea textArea;
 	private JTextField stateField;
+	private QuizController controller(){ return dq.controller; }
 
 	/**
 	 * Launch the application.
@@ -60,7 +66,13 @@ public class DQWindow implements Writable{
 		dq = d;
 		initialize();
 		frmDonQuizote.setAlwaysOnTop(true);
+		
+		// This doesn't work
+		frmDonQuizote.setLocation(950, 250);
+		
+		
 		frmDonQuizote.setVisible(true);
+		
 	}
 	
 	public DQWindow(){
@@ -87,13 +99,14 @@ public class DQWindow implements Writable{
 		frmDonQuizote = new JFrame();
 		frmDonQuizote.setTitle("Don Quizote");
 		frmDonQuizote.setAlwaysOnTop(true);
-		frmDonQuizote.setBounds(100, 100, 268, 300);
+		frmDonQuizote.setBounds(100, 100, 297, 300);
 		frmDonQuizote.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frmDonQuizote.getContentPane().setLayout(new MigLayout("", "[289px]", "[33px][207px][33px]"));
 		//frmDonQuizote.setDefaultLookAndFeelDecorated = false;
 		JPanel panel = new JPanel();
-		frmDonQuizote.getContentPane().add(panel, BorderLayout.SOUTH);
+		frmDonQuizote.getContentPane().add(panel, "cell 0 2,growx,aligny top");
 		
-		JButton btnAnswerQuestion = new JButton("Answer Question");
+		JButton btnAnswerQuestion = new JButton("Answer Q");
 		panel.add(btnAnswerQuestion);
 		btnAnswerQuestion.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -101,22 +114,31 @@ public class DQWindow implements Writable{
 			}
 		});
 		
-		JButton btnPickColour = new JButton("Pick Colour");
-		panel.add(btnPickColour);
-		btnPickColour.addActionListener(new ActionListener() {
+		JButton btnAdminAreas = new JButton("Admin Areas");
+		panel.add(btnAdminAreas);
+		btnAdminAreas.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 					//dq.answerQuestion();
-					dq.getColour();
+				controller().setAdminAreas();
+			}
+		}); 
+		
+		JButton btnCheckArea = new JButton("Check Area");
+		panel.add(btnCheckArea);
+		btnCheckArea.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+					//dq.answerQuestion();
+					controller().getColour();
 			}
 		});
 		
 		JPanel panel_1 = new JPanel();
-		frmDonQuizote.getContentPane().add(panel_1, BorderLayout.NORTH);
+		frmDonQuizote.getContentPane().add(panel_1, "cell 0 0,growx,aligny top");
 		
-		JButton btnSetAreas = new JButton("Set Areas");
+		JButton btnSetAreas = new JButton("Set Area");
 		btnSetAreas.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-						dq.setAreas();
+				controller().setAreas();
 			}
 		});
 		panel_1.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
@@ -138,7 +160,7 @@ public class DQWindow implements Writable{
 		panel_1.add(horizontalGlue);
 		
 		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
-		frmDonQuizote.getContentPane().add(tabbedPane, BorderLayout.CENTER);
+		frmDonQuizote.getContentPane().add(tabbedPane, "cell 0 1,grow");
 		
 		JPanel panel_2 = new JPanel();
 		tabbedPane.addTab("Status", null, panel_2, null);
@@ -168,14 +190,38 @@ public class DQWindow implements Writable{
 		textArea = new JTextArea();
 		scrollPane.setViewportView(textArea);
 		textArea.setEditable(false);
+		
+		JMenuBar menuBar = new JMenuBar();
+		frmDonQuizote.setJMenuBar(menuBar);
+		
+		JMenu mnTools = new JMenu("Tools");
+		menuBar.add(mnTools);
+		
+		JMenuItem mntmToggleOverlay = new JMenuItem("Toggle Overlay");
+		mnTools.add(mntmToggleOverlay);
+		mntmToggleOverlay.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+					//dq.answerQuestion();
+					dq.toggleOverlay();
+			}
+		});
 	}
 	
 	public void updateText(String s){
 		
 		textArea.setText(textArea.getText() + "\n" + s);
+		frmDonQuizote.repaint();
+	}
 	
+	public void updateState(String s){
+		
+		stateField.setText(s);
+		frmDonQuizote.repaint();
+		
 	}
 
+	
+	
 	// Add the QID label
 	public void setQID(final String string) {
 		
@@ -215,6 +261,16 @@ public class DQWindow implements Writable{
 		stateField.repaint();
 		//this.notify();
 		frmDonQuizote.repaint();
+	}
+
+	public static void displayImage(BufferedImage b) {
+		LoadAndShow test = new LoadAndShow(b);
+		JFrame f = new JFrame();
+		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		f.add(new JScrollPane(test));
+		f.setSize(b.getWidth(), b.getHeight());
+		f.setLocation(200, 200);
+		f.setVisible(true);
 	}
 	
 

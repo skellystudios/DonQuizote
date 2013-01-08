@@ -33,5 +33,6 @@
 	<classpathentry kind="lib" path="C:/Users/Michael/Coding/Libraries/commons-collections-3.2.1/commons-collections-3.2.1.jar"/>
 	<classpathentry kind="lib" path="C:/Users/Michael/Coding/Libraries/commons-beanutils-1.8.3/commons-beanutils-1.8.3.jar"/>
 	<classpathentry kind="lib" path="C:/Users/Michael/Coding/Libraries/xom-1.2.8.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Michael/Coding/Libraries/java-image-scaling-0.8.5.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

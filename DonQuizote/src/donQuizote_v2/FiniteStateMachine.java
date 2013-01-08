@@ -1,117 +1,118 @@
 package donQuizote_v2;
 
+import java.awt.Toolkit;
+import java.awt.event.KeyEvent;
+import java.awt.image.BufferedImage;
+
 public class FiniteStateMachine {
 	
 	/* 
 	 * Things we need
 	 */
 	
-	public enum State {SPLASHMAIN, SPLASHDEMO, SPLASHPLAY, TARRENT1,  
-		FASTESTFINGER, RESULTS, QUESTION};	
+	public enum State {FFF, QUESTION, CHOICEPAGE, PLAYPAGE, SCOREBOARD, 
+						CORRECT, WRONG, TRYAGAIN, COLLECTCONTINUE, 
+						ISCOLLECT, CONFUSED};	
 	public State state;
 	public int level;
-	public boolean killSwitch = false;
+	public boolean killSwitch;
 	public boolean confused = false;
 	private QuizController controller;
 	private DonQuizote dq;
 	
-	/*
-	 * Pretty much the whole application flow
-	 */
-	
+
 	public FiniteStateMachine(DonQuizote d, QuizController c) {
 		controller = c;
-		state = State.SPLASHPLAY;
-		confused = true;
+		state = State.CHOICEPAGE;
+		confused = false;
 		dq = d;//DonQuizote.getInstance();
 	}
 	
-	public void doAction(){
-		/*
-		 *  The general idea is that at each point we should check 
-		 *  we are where we think, and then perform discrete actions
-		 *  until we have made a state transition, and mark what we think that transition is
-		 *  
-		 *  If the check fails, we should either go into a panic mode and refresh the 
-		 *  browser and start again, or we should attempt to guess the most likely state
-		 */
+ 
+	public void doTransaction(int timeout){
 		
-		if (confused) System.out.println("#FSM: Entered with fsm confused. Trying to get a grip NOW"); tryToUpdateState(); 
-		
-		System.out.println("#FSM: Arrived at " + state);
-		switch(state){
-			// This is the splash page where we pick PLAY or REAL money 
-			case SPLASHMAIN:
-				// Check that we are where we think we are
-				if (!controller.isStartPage()) { confused = true; break; }
-				// Press the playMoney button
-				controller.pressDemoButton();
-				snooze(2000);
-				state = State.SPLASHPLAY; 
-				
-				break;
-			case SPLASHDEMO:
-				
-				// 
-				break;
-			// This is where we have to click the play button. And maybe make a bet, but we don't do that	
-			case SPLASHPLAY:
-				
-				if (controller.isStartPage()) {state = State.SPLASHMAIN; break;}
-				controller.pressPlayButton();
-				snooze(1000);
-				controller.pressSkipButton();
-				snooze(1000);
-				controller.skipChris();
-				state =  State.FASTESTFINGER;
-				break;
-			// The stupid 4 options fastest finger
-			case FASTESTFINGER:
-				if (!controller.isFFF()) {confused=true; break;}
-				snooze(2000);
-				controller.pressA(); snooze(1000);
-				controller.pressB(); snooze(1000);
-				controller.pressC(); snooze(1000);
-				controller.pressD(); 
-				snooze(4000);
-				state = State.RESULTS;
-				break;
-			// Chris Tarrent says some shit 
-			case RESULTS:
-				// Click somewhere arbitrary to skip it
-				controller.pressA();
-				snooze(4000);
-				state = State.QUESTION;
-				break;
-			case QUESTION:
-				//OH THIS IS THE BIG ONE
-				String winner = dq.answerQuestion();
-				if (winner == "A") controller.pressA();
-				if (winner == "B") controller.pressB();
-				if (winner == "C") controller.pressC();
-				if (winner == "D") controller.pressD();
-				confused = true;
-				break;
-			default: 
-				confused = true;
-				snooze(100); // Chill out a little
-			
+		while (!tryToUpdateState() && timeout > 0 && !killSwitch)
+		{
+			snooze(100); timeout--;
+			System.out.println("Timout " + timeout);
+			checkCaps();
 		}
-		
-		if (confused) System.out.println("#FSM: Man, I thought we were somewhere else. FSM is confused.");
-		else System.out.println("#FSM: Exited " + state);
-		
-		snooze(100);
+		if (timeout < 1) killSwitch = true;
+	
 	}
-
-		public void tryToUpdateState(){
+	
+	public Boolean tryToUpdateState(){
 			
-			if (controller.isStartPage()){state = State.SPLASHMAIN;}
-			else if (controller.is2WayTraffic()){state = State.SPLASHPLAY;}
-			else if (controller.isFFF()){state = State.FASTESTFINGER;}
+		
+		switch(state){
+			// This is where we choose play or real money
+			case CHOICEPAGE:
+				// Once the green goes, we've moved. Should be instant, pretty much
+				if (!isModalColour("checkStartScreenGreen", -16747628, 80)) {
+					state = State.PLAYPAGE; return true; 
+				}
+				break;
+			case PLAYPAGE:
+				//  Wait until the green bit appears
+				if (isMeanColour("fffTimer", -7946692, 80)) {
+					state = State.FFF; return true; 
+				}
+				break;
+			case FFF:
+				// Wait until the green bit disappears
+				if (!isMeanColour("fffTimer", -7946692, 80)) {
+					state = State.ISCOLLECT; return true; 
+				}
+				break; 
+			case ISCOLLECT:
+				if (!isModalColour("splitBlackContinueCollect", 0, 110)) {
+					state = State.COLLECTCONTINUE; return true; 
+				} else {
+					state = State.SCOREBOARD; return true; 
+				}
+			case SCOREBOARD:
+				// Wait until the purple disappears, and then check for a bonus round
+				if (!isMeanColour("splitPurple", -8434794, 80)) {
+					if (isMeanColour("fffTimer", -7946692, 80)) {
+						state = State.FFF; return true; 
+					} else {
+						state = State.QUESTION; return true;
+					}
+				} else {
+					return false;
+				}
+			case QUESTION:
+				// See if we got one right first, cos we're optimistic like
+				int correctColour = -7551175;
+				int wrongColour = -16732441;
+				if (isModalColour("answerA", correctColour, 80)
+						||isModalColour("answerB", correctColour, 80)
+						||isModalColour("answerC", correctColour, 80)
+						||isModalColour("answerD", correctColour, 80)) 
+					{ state = State.CORRECT; return true; }
+				// Now see if we're definitely wrong (pending Try-Again style reprieve)		
+				if (isModalColour("answerA", wrongColour, 80)
+						||isModalColour("answerB", wrongColour, 80)
+						||isModalColour("answerC", wrongColour, 80)
+						||isModalColour("answerD", wrongColour, 80)) 
+					{ state = State.CORRECT; return true; }
+				return false;
 			
-			
+			default:
+				return false;
+				
 		}
+		
+		return false;
+	
+	}
+	
+	
+	/*
+	 * 
+	 ******************** UTILITIES **************************
+	 * 
+	 */
 
 	public void snooze(int i){
 		try { 
@@ -122,4 +123,31 @@ public class FiniteStateMachine {
 		}
 	}
 	
+	public Boolean isModalColour(String area, int colour, int tolerance){  
+		BufferedImage image = controller.getImage(controller.getArea(area));
+		int areaColour = controller.getModalColour(image);
+		int result = (int) ColourTester.compare(areaColour, colour);
+		System.out.println("comparing " + areaColour + " against reference " + colour + " result was " + result);
+		Boolean check = result < tolerance; 
+		return check;
+		}
+	
+	public Boolean isMeanColour(String area, int colour,  int tolerance){  
+		BufferedImage image = controller.getImage(controller.getArea(area));
+		int areaColour = controller.getMeanColour(image);
+		int result = (int) ColourTester.compare(areaColour, colour);
+		System.out.println("comparing " + areaColour + " against reference " + colour + " result was " + result);
+		Boolean check = result < tolerance;
+		return check;
+		}
+	
+	// Check for caps and then stop if necessary
+	public void checkCaps(){
+	boolean isCaps = Toolkit.getDefaultToolkit().getLockingKeyState(KeyEvent.VK_CAPS_LOCK);
+			if (isCaps) { 
+				System.out.println("#FSM: CAPSLOCK'd"); 				
+				killSwitch = true;
+				state = State.CONFUSED;
+			}
+	}
 }

@@ -122,7 +122,8 @@ public class TesjeractOCR extends OCREngine {
 		
 		
 		
-		System.out.println("Recognised: " + s + " #TesjeractOCR");
+		System.out.println("#TjOCR: Recognised: " + s);
+		if (s == null) s = "";
 		return s;
 	}
 

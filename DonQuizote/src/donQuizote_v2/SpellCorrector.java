@@ -78,4 +78,33 @@ public class SpellCorrector {
 		return newstring;
 	}
 
+	
+	public static void main(String[] args){
+		
+		String s = "he||o";
+		System.out.println(s.replace('|', 'l'));
+		
+		String[] test = new String[]{"test1'\\23|"};
+		test = SpellCorrector.correctChars(test);
+		System.out.println(test[0]);
+		
+	}
+	
+	public static String[] correctChars(String[] strings) {
+
+		int i = 0;
+		for (String s : strings){
+			
+			s = s.replace('/', 'l');
+			s = s.replace('\\', 'l');
+			s = s.replace('|', 'l');
+			s = s.replace("'","");
+			
+			strings[i] = s;
+			i++;
+			
+		}
+		return strings;
+	}
+
 }

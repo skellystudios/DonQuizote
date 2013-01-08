@@ -55,7 +55,7 @@ public class BingAzureLookup implements Lookup {
 	public static int getNumberOfResults(String s){
 		
 		String count = getSearchResults(s); 
-		
+		if (count == "") count = "0";
 			
 			System.out.println("# EWLookup - Queried [" + s + "] and got " + count + " results.");
 			
@@ -101,7 +101,6 @@ public class BingAzureLookup implements Lookup {
         
         // Parse JSON
         JSONObject json = (JSONObject) JSONSerializer.toJSON(sb.toString());
-       
         String s = json.getJSONObject("d").getJSONArray("results").getJSONObject(0).getString("WebTotal");
         
         
@@ -203,7 +202,7 @@ public class BingAzureLookup implements Lookup {
 
 		String[] s = new String[2];
 		s[0] = output;
-		s[1] = output;
+		s[1] = winner;
 		return s;
 		
 	}
