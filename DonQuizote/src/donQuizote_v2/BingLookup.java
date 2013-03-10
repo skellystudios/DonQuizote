@@ -21,7 +21,7 @@ import org.xml.sax.SAXException;
 import org.apache.commons.codec.binary.Base64;
 
 
-class BingLookup implements Lookup
+class BingLookup 
 {
 	// Make the parser factory and the answer holders
 	static XPathFactory factory = null;
@@ -369,6 +369,12 @@ results.getLength()) + " of " + total + " results ");
 
 			System.out.println();
 		}
+	}
+
+
+	public int getNumberOfResults(String query1) {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 	
 

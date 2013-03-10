@@ -73,7 +73,7 @@ public class QuizController {
 	// Get an area, and use it to set the play area (totalArea). 
 	// Current usage is to just capture the whole game area and segregate off manually later
 	public void setAreas(){
-		dqwindow.updateText("Selecting OCR areas");
+	
 		GetAreaWorker worker = new GetAreaWorker(NumberOfAreas){
 		@Override
 		 protected void done2(){
@@ -107,11 +107,13 @@ public class QuizController {
 	// Specifically return an array of images with the questions and the answers
 	public BufferedImage[] getQAImages() {
 		BufferedImage[] qAImages = new BufferedImage[5];
-		qAImages[0] = getInvertedImage(getArea("question"));
+		
 		qAImages[1] = getInvertedImage(getArea("answerA"));
 		qAImages[2] = getInvertedImage(getArea("answerB"));
 		qAImages[3] = getInvertedImage(getArea("answerC"));
 		qAImages[4] = getInvertedImage(getArea("answerD"));
+		qAImages[0] = getInvertedImage(getArea("question"));
+		
 		return qAImages;
 	}
 	
@@ -129,7 +131,10 @@ public class QuizController {
 	}
 	
 	public BufferedImage getInvertedImage(Rectangle captureArea){
-		return invertImage(getImage(captureArea));
+		
+		return getImage(captureArea);
+		
+		//return invertImage(getImage(captureArea));
 	}
 	
 	// Invert an image
@@ -252,6 +257,7 @@ public class QuizController {
 		dqwindow.updateText("DQ: area is " + getRectangeDims());
 		dqwindow.updateText("DQ: modal colour is " + startPageColour());
 		dqwindow.updateText("DQ: mean colour is " + meanPageColour());
+		dqwindow.updateText("OCR: " + dq.ocrBufferedImage(getAdminImage()));
 	}
 	
 

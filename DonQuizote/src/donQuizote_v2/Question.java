@@ -9,16 +9,37 @@ public class Question {
 	 */
 	
 	public final int numberofAnswers = 4;
+	
+	public Integer qid;
+	
 	public String question;
 	public String[] answer = new String[numberofAnswers];
-	public Boolean correct;
 	public Integer[] answerCorrect = new Integer[numberofAnswers];
-	public Integer qid;
+	
+	public Boolean correct(){
+		for (int j : answerCorrect){
+			if (j == 1) return true;
+		}
+		return false;
+	}
+	
+	public Integer correctID(){
+		
+		int i = 0;
+		for (int j : answerCorrect){
+			if (j == 1) return i;
+			i++;
+		}
+		
+		return -1;
+		
+	}
+	
 	
 	public int getNextAnswer(){
 		for (int i = 0; i<numberofAnswers; i++){
-			if ((!correct && answerCorrect[i]!= 2)
-					||(correct && answerCorrect[i]== 1) ){
+			if ((!correct() && answerCorrect[i]!= 2)
+					||(correct() && answerCorrect[i]== 1) ){
 				return i;
 			}
 		}

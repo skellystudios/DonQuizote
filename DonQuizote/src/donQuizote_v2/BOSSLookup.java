@@ -5,6 +5,7 @@ import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 
 
@@ -22,8 +23,12 @@ import net.sf.json.JSONObject;
 import net.sf.json.JSONSerializer;
 import net.sf.json.xml.XMLSerializer;
 
+import oauth.signpost.OAuthConsumer;
+import oauth.signpost.basic.DefaultOAuthConsumer;
+
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.exception.NestableRuntimeException;  
+import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.NameList;
 import org.w3c.dom.Node;
@@ -34,45 +39,57 @@ import org.xml.sax.SAXException;
 
 
 
-public class BingAzureLookup extends SwingWorker implements Lookup  {
+public class BOSSLookup extends SwingWorker implements Lookup {
 
 	
 	static Document doc;
-	public AnswerEngine ae;
+	private static final Logger log = Logger.getLogger(BOSSLookup.class); 
+	protected static String yahooServer = "http://yboss.yahooapis.com/ysearch/";  
+	private static String consumer_key = "dj0yJmk9S2I5N2FiMnlMd2IyJmQ9WVdrOVlXdzJUa1pxTjJFbWNHbzlNakV3TkRnMk1USTJNZy0tJnM9Y29uc3VtZXJzZWNyZXQmeD1lZg--";  
+	private static String consumer_secret = "1dc3def4ac55ca4df44d149303f96644519f68bb";  
+
+	/** The HTTP request object used for the connection */  
+	private static StHTTPRequest httpRequest = new StHTTPRequest();  
+	private static final String ENCODE_FORMAT = "UTF-8";  
+	private static final String callType = "web";  
+	private static final int HTTP_STATUS_OK = 200; 
+	
+	private AnswerEngine ae;
 	private String queryString;
+	
+	public BOSSLookup(AnswerEngine ae, String queryString1){
+		this.ae = ae;
+		this.queryString = queryString1;
+	}
+	
 	
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		BingAzureLookup bal = new BingAzureLookup();
+		BOSSLookup bl = new BOSSLookup(null, null);
 		String[] testQs = { "Who which director directed the film Psycho?", "Steven Spielberg", "Quentin Tarantino" ,
 				"Hitchcock", "The Coen Brothers"
 				};
-		bal.getAnswer(testQs);
+		//bl.getAnswer(testQs);
+		String query = "(Which famous director directed the film Reservoir Dogs)  +(Steven Spielberg)";
+		int i = bl.getNumberOfResults(query);
+		System.out.println("Number of results: " + i);
 		
-
-		
 	}
-	
-	
-	public BingAzureLookup(){
-	
-	}
-	
-	public BingAzureLookup(AnswerEngine ae, String queryString){
-		this.ae = ae;
-		this.queryString = queryString;
-	}
-	
 	
 	public int getNumberOfResults(String s){
 		
-		String count = getSearchResults(s); 
+		String output = getSearchResults(s); 
+		
+		JSONObject json = (JSONObject) JSONSerializer.toJSON(output);
+	    String count = json.getJSONObject("bossresponse").getJSONObject("web").getString("totalresults");
+	   // System.out.println("#BOSS count is " + count);  
+		
 		if (count == "") count = "0";
 
-		System.out.println("# BAzLookup - Queried [" + s + "] and got " + count + " results.");
+		System.out.println("# BOSS - Queried [" + s + "] and got " + count + " results.");
 	
 		try {
 				return Integer.parseInt(count);
@@ -86,44 +103,41 @@ public class BingAzureLookup extends SwingWorker implements Lookup  {
 
 	public static String getSearchResults(String query){
 		
+		try {
+		// Start with call Type  
+		String params = callType;  
+		  
+		// Add query  
+		params = params.concat("?q=");  
+		  
+		// Encode Query string before concatenating  
 		query = URLEncoder.encode(query);
-        String bingUrl = "https://api.datamarket.azure.com/Data.ashx/Bing/Search/v1/Composite?" +
-        		"Sources=%27web%27" +
-        		"&Query=%27"+query+"%27" +
-        		"&WebSearchOptions=%27DisableQueryAlterations%27" +
-        		"&Market=%27en-US%27" +
-        		"&$top=1" +
-        		"&$format=JSON"
-        		;
+		params = params.concat(URLEncoder.encode(query, "UTF-8"));  
+		  
+		// Create final URL  
+		String url = yahooServer + params;  
+		  
+		// Create oAuth Consumer   
+		OAuthConsumer consumer = new DefaultOAuthConsumer(consumer_key, consumer_secret);  
+		  
+		// Set the HTTP request correctly  
+		httpRequest.setOAuthConsumer(consumer);  
+		  
+		  
+		log.info("sending get request to" + URLDecoder.decode(url, ENCODE_FORMAT));  
+		int responseCode = httpRequest.sendGetRequest(url);   
+		  
+		// Send the request  
+		if(responseCode == HTTP_STATUS_OK) {  
+		log.info("Response ");  
+		} else {  
+		log.error("Error in response due to status code = " + responseCode);  
+		}  
+		
+		String response = httpRequest.getResponseBody();  
+		System.out.println(response);  
 
-        String accountKey = "amnSjlBAdRgkD1YQcZFdmZS9nSQopCQIWnFtM51kxnw=";
-        String aKey = accountKey + ":" + accountKey;
-
-		byte[] accountKeyBytes =  Base64.encodeBase64(aKey.getBytes());
-        String accountKeyEnc = new String(accountKeyBytes);
-        
-        try {
-        URL url = new URL(bingUrl);
-        URLConnection urlConnection = url.openConnection();
-        urlConnection.setRequestProperty("Authorization", "Basic " + accountKeyEnc);          
-        InputStream is = urlConnection.getInputStream();
-      
-        // Read to string
-        InputStreamReader isr = new InputStreamReader(is);
-        int numCharsRead;
-        char[] charArray = new char[1024];
-        StringBuilder sb = new StringBuilder();
-        while ((numCharsRead = isr.read(charArray)) > 0) {
-            sb.append(charArray, 0, numCharsRead);
-        }
-        
-        
-        // Parse JSON
-        JSONObject json = (JSONObject) JSONSerializer.toJSON(sb.toString());
-        String s = json.getJSONObject("d").getJSONArray("results").getJSONObject(0).getString("WebTotal");
-        
-        
-		return s;
+		return response;
 				
 		} catch (Exception e) {
 			System.out.println(e);
@@ -135,11 +149,42 @@ public class BingAzureLookup extends SwingWorker implements Lookup  {
 
 	}
 
+
+
+	public String guess() 	{ return "A";		} // Placeholder
+	public Integer	 confidence() { return 100; } // Placeholder
+	public String results() { return "BB";} // Placeholder
+
+
+	@Override
+	protected Object doInBackground() throws Exception {
+		
+		int results = getNumberOfResults(queryString);
+		ae.addAnswer(queryString, results);
+		
+		return null;
+	}
+
+
+	@Override
+	public void setAnswerEngine(AnswerEngine ae) {
+		this.ae = ae;	
+	}
+	
+	public void nothing(){
+	}
+	
+}
+
+
+
+	/* NOW JUNK??
+	 * 
 	public String[] getAnswer(String[] qAs) {	
 		
-		/*
-		 * FIRST - query first the question and +"answer" and then just "answer"
-		 */
+		
+		 //FIRST - query first the question and +"answer" and then just "answer"
+		 
 		
 		int numberOfAnswers = qAs.length - 1;
 		
@@ -167,9 +212,9 @@ public class BingAzureLookup extends SwingWorker implements Lookup  {
 			totalHits += qAndAHits[i];
 		}
 		
-		/*
-		 * SECOND - Do some processing and report back
-		 */
+		
+		 //SECOND - Do some processing and report back
+		 
 		
 		// If we have any q&a hits, then use ratios. Otherwise do just answers
 		if (totalHits > 0)
@@ -220,27 +265,7 @@ public class BingAzureLookup extends SwingWorker implements Lookup  {
 
 		String[] s = new String[2];
 		s[0] = output;
-		s[1] = Integer.toString(maxID);
+		s[1] = winner;
 		return s;
-		
-	}
-
-	public String guess() 	{ return "A";		} // Placeholder
-	public Integer	 confidence() { return 100; } // Placeholder
-	public String results() { return "BB";} // Placeholder
-
-	@Override
-	protected Object doInBackground() throws Exception {
-		
-		int results = getNumberOfResults(queryString);
-		ae.addAnswer(queryString, results);
-		
-		// TODO Auto-generated method stub
-		return null;
-	}
+		*/
 	
-	public void setAnswerEngine(AnswerEngine ae){
-		this.ae = ae;
-	}
-
-}

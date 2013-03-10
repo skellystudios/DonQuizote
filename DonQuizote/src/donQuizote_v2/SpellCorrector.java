@@ -29,7 +29,7 @@ public class SpellCorrector {
 		    	
 		    	
 		    	// Update the question
-		    	System.out.println("Replacing "+qAndAs[i]+" with "+replacement);
+		    	System.out.println("SPELL: Replacing '"+qAndAs[i]+"' with '"+replacement+"'");
 		    	questionAndAnswers[i] = replacement;
 		    			
 			} 
@@ -69,11 +69,27 @@ public class SpellCorrector {
 	
 	}
 	
-	
+	//TODO: fix this for multiwords please
 	public static  String replace(String string, String original, SpellCorrection corr){
-		//System.out.println(string+" becomes #SpellCorrector 1" );
+		
+		
 		//System.out.println("DEBUG " + string.substring(corr.getOffset(), corr.getOffset()+corr.getLength()) + corr.getWords()[0]);
-		String newstring = string.replaceFirst(original.substring(corr.getOffset(), corr.getOffset()+corr.getLength()),corr.getWords()[0]);
+		
+		String replacement = "";
+		int i = 0;
+		
+		while (replacement.length() < corr.getLength() - 1)
+		{
+			//System.out.println(corr.getLength());
+			//System.out.println(replacement.length()); 
+			
+			if (i > 0) replacement += " ";
+			replacement += corr.getWords()[i];
+			
+			i++;
+		}
+		System.out.println("#SC " + replacement);
+		String newstring = string.replaceFirst(original.substring(corr.getOffset(), corr.getOffset()+corr.getLength()), replacement);
 		//System.out.println(newstring+string+" #SpellCorrector 2" );
 		return newstring;
 	}
@@ -81,26 +97,53 @@ public class SpellCorrector {
 	
 	public static void main(String[] args){
 		
-		String s = "he||o";
-		System.out.println(s.replace('|', 'l'));
 		
-		String[] test = new String[]{"test1'\\23|"};
-		test = SpellCorrector.correctChars(test);
-		System.out.println(test[0]);
+		args = new String[]{"Ehot pune"};
+		SpellCorrector.correct(args);
+		
+		
+		//String[] test = new String[]{"test1'\\23| 123 a1b1"};
+		//test = SpellCorrector.correctChars(test);
+
 		
 	}
 	
 	public static String[] correctChars(String[] strings) {
-
+		
+		
 		int i = 0;
 		for (String s : strings){
 			
+			
+			// Get rid of all the obvious bits
 			s = s.replace('/', 'l');
 			s = s.replace('\\', 'l');
 			s = s.replace('|', 'l');
-			s = s.replace("'","");
+			//s = s.replace('\'','');
 			
-			strings[i] = s;
+
+			
+			StringBuilder newString = new StringBuilder(s);
+			
+			// Go down the string. if we find a number right next to a letter, it's probably wrong.
+			for (int j = 0; j < s.length(); j++){
+				
+				Boolean letterToTheLeft = true;
+				if (j < 1 || !Character.isAlphabetic(s.charAt(j-1))) { letterToTheLeft = false; }
+				Boolean letterToTheRight = true;
+				if (j + 1 > s.length()-1 || !Character.isAlphabetic(s.charAt(j+1))) { letterToTheRight = false; }
+				
+				
+				if (letterToTheLeft || letterToTheRight) {
+					
+					// Replace that with the right stuff, 1 for l etc.
+					if (s.charAt(j) == '1') { newString.setCharAt(j, 'l'); }
+					if (s.charAt(j) == '0') { newString.setCharAt(j, 'o'); }
+					if (s.charAt(j) == '7') { newString.setCharAt(j, '?'); }
+				}
+			}
+			
+			strings[i] = newString.toString();
 			i++;
 			
 		}

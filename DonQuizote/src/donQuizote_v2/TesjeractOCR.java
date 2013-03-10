@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel.MapMode;
+import java.util.Date;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriter;
@@ -22,6 +23,8 @@ import net.gencsoy.tesjeract.Tesjeract;
 
 
 public class TesjeractOCR extends OCREngine {
+	
+	private Tesjeract tess = new Tesjeract("eng");
 	static {
 		if (System.getProperty("os.name").toLowerCase().startsWith("windows"))
 			System.loadLibrary("tessdll");
@@ -39,6 +42,10 @@ public class TesjeractOCR extends OCREngine {
 		new Tesjeract("eng");
 	}
 
+	public void TessjeractOCR(){
+		tess = new Tesjeract("eng");
+	}
+	
 	private MappedByteBuffer getTiffFile(File f) throws FileNotFoundException, IOException {
 		//URL resource = getClass().getResource();
 		//String tiffFileName = resource.getFile().replaceAll("%20", " ");
@@ -70,7 +77,7 @@ public class TesjeractOCR extends OCREngine {
 
 	private String EANYCodeChartoString(EANYCodeChar[] ecc){
 		String s = "";
-		//System.out.println("Yah, here #TOCR" +  ecc.length);
+		if (ecc == null) System.out.println("Null recognised");
 		for (int j=0; j < ecc.length; j++){
 			
 			
@@ -100,6 +107,7 @@ public class TesjeractOCR extends OCREngine {
 		String s = "";
 		try {
 		
+			System.out.println("#TOCR 1");
 		ByteBuffer bytebuff = imageToTiffBuffer(buf);
 		File file = new File("filename.bmp");
 		ImageIO.write(buf, "BMP", file);
@@ -107,23 +115,35 @@ public class TesjeractOCR extends OCREngine {
 		
 		
 		
-		Tesjeract tess = new Tesjeract("eng");
 		EANYCodeChar[] words = tess.recognizeAllWords(bytebuff);
-		//System.out.println("Here #TOCR 1");
+		System.out.print("#TOCR 6");
+		
 		s = EANYCodeChartoString(words);
+		System.out.print("#TOCR 7");
 		
 		file.delete();
+		System.out.print("#TOCR 8");
 		file = null; 
 		
 		} catch (Exception e) {
 			System.out.println(e.toString());
+			System.out.print("#TOCR 0");
 		}
 
 		
 		
 		
 		System.out.println("#TjOCR: Recognised: " + s);
-		if (s == null) s = "";
+		if (s == null) {
+			s = "";
+			File logfile = new File("nullfile" + System.nanoTime() + ".bmp");
+			try {
+				ImageIO.write(buf, "BMP", logfile);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		
 		return s;
 	}
 

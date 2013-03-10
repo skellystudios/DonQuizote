@@ -1,6 +1,10 @@
 package donQuizote_v2;
 
+import java.io.BufferedInputStream;
+import java.io.DataInputStream;
+import java.io.InputStream;
 import java.io.StringReader;
+import java.net.URL;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -12,26 +16,24 @@ public class TestClass {
 
 	public static void main(String[] args){
 		
-			String xml = "<?xml version=\"1.0\" ?> <earth> <country>us</country> </earth>";
-		    DocumentBuilderFactory factory = null;
-		    DocumentBuilder builder = null;
-		    Document ret = null;
+		URL url;
+		InputStream is = null;
+		DataInputStream dis;
+		String line;
 
-		    try {
-		      factory = DocumentBuilderFactory.newInstance();
-		      builder = factory.newDocumentBuilder();
-		    } catch (Exception e) {
-		      e.printStackTrace();
+		try {
+		    url = new URL("https://www.google.com/search?q=google&gbv=1&um=1&ie=UTF-8&tmb=isch&source=og&sa=N&tab=wi");
+		    is = url.openStream();  // throws an IOException
+		    dis = new DataInputStream(new BufferedInputStream(is));
+
+		    while ((line = dis.readLine()) != null) {
+		        System.out.println(line);
 		    }
-
-		    try {
-		      ret = builder.parse(new InputSource(new StringReader(xml)));
-		    } catch (Exception e) {
-		      e.printStackTrace();
+		} catch (Exception mue) {
+		     mue.printStackTrace();
 	
-		    }
-		    
-		  System.out.println(ret);
+		
+		}
 		  
 		
 	}

@@ -20,7 +20,7 @@ import org.w3c.dom.NodeList;
 
 
 
-public class EntireWebLookup implements Lookup {
+public class EntireWebLookup  {
 
 	/**
 	 * @param args
@@ -31,12 +31,12 @@ public class EntireWebLookup implements Lookup {
 		String[] testQs = { "Who which director directed the film Psycho?", "Quentin Tarantino" ,
 				"Alfred Hitchcock", "The Cohen Brothers", "Steven Spielberg"
 				};
-		ewl.getAnswer(testQs);
+		//ewl.getAnswer(testQs);
 		
 
 		
 	}
-	public static int getNumberOfResults(String s){
+	public int getNumberOfResults(String s){
 		
 		Document doc = getSearchResults(s); 
 		
@@ -70,7 +70,7 @@ public class EntireWebLookup implements Lookup {
 		
 		String url = "http://www.entireweb.com/xmlquery?"
 				// The token (stolen!)
-				+ "pz=c5dee9bbe86fc8037e0dff9565e93494"
+				+ "pz=ed5bda2d998e586f6e5aa97940251e27"
 				
 				// An IP address
 				+ "&ip=192.168.0.1"
@@ -102,95 +102,6 @@ public class EntireWebLookup implements Lookup {
 		return null;
 	
 
-	}
-
-	@Override
-	public String[] getAnswer(String[] qAs) {	
-		
-		/*
-		 * FIRST - query first the question and +"answer" and then just "answer"
-		 */
-		
-		int numberOfAnswers = qAs.length - 1;
-		
-		// Hold our results somewhere
-		double[] hits = new double[numberOfAnswers]; for (int i = 0; i < hits.length; i++){ hits[i] = 0;}
-		double[] qAndAHits = new double[numberOfAnswers];
-		double[] aHits = new double[numberOfAnswers];
-		int totalHits = 0;
-		
-		
-		for (int i = 0; i < numberOfAnswers; i++){	
-			
-			// QUESTION AND +"ANSWER"
-			
-			// Build and send the request.
-			String question = qAs[0];
-			String answer = qAs[i+1];
-			String query1 = question+"+\""+answer+"\"";
-			String query2 = "\""+answer+"\"";
-			//Assign the variables
-			qAndAHits[i] = (double) getNumberOfResults(query1);
-			aHits[i] = (double) getNumberOfResults(query2);
-			totalHits += qAndAHits[i];
-		}
-		
-		/*
-		 * SECOND - Do some processing and report back
-		 */
-		
-		// If we have any q&a hits, then use ratios. Otherwise do just answers
-		if (totalHits > 0)
-		{
-			for (int i = 0; i < numberOfAnswers; i++){
-				if (aHits[i] > 0)
-				hits[i] = qAndAHits[i] / aHits[i]; 
-				else
-				hits[i] = 0; 		
-			}
-		} else {
-			for (int i = 0; i < numberOfAnswers; i++){
-				hits[i] = aHits[i];
-			}
-		}
-		
-
-		// Which one won?
-		double maxHits = 0.0; int maxID = 1;	String winner;
-		String[] answerIDs = {"A", "B", "C", "D"}; 
-		
-		// Identify the winner
-		System.out.printf("Who's the winner: ");
-			for (int i = 0; i < numberOfAnswers; i++){
-				
-			System.out.printf(answerIDs[i] + " " + hits[i]);
-			if (maxHits <= hits[i]){
-				maxHits = hits[i]; 
-				maxID = i;
-			}
-		}
-		
-		winner = answerIDs[maxID];
-		
-		
-		double stanDev = Utilities.standardDeviationCalculate(hits);
-		double sum = 0; for (double d : hits)  sum += d;	
-		double mean = sum / hits.length;
-		double distFromMean = maxHits - mean;
-		double sDsFromMean = 0;
-		if (stanDev != 0) {  sDsFromMean = distFromMean / stanDev;}
-		double confidence = sDsFromMean * sDsFromMean;
-		double finalconf = confidence / (1.333333);   // Why?
-
-		
-		String output = "Winner is " + winner + " with "  + sDsFromMean + " sDsFromMean => " + finalconf + " confidence";
-		System.out.printf(output);
-
-		String[] s = new String[1];
-		s[0] = output;
-		s[1] = output;
-		return s;
-		
 	}
 
 	public String guess() 	{ return "A";		} // Placeholder

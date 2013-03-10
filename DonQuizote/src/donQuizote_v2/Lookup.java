@@ -1,12 +1,15 @@
 package donQuizote_v2;
 
+import javax.swing.SwingWorker;
+
 
 public interface Lookup{
-	
-	public String[] getAnswer(String[] qAndAs);
-	public String guess();
-	public Integer confidence();
-	public String results();
 
-	}			
-				
+	int getNumberOfResults(String query1);
+	
+	public void setAnswerEngine(AnswerEngine ae);
+	
+	public void execute();
+	
+}			
+				 
